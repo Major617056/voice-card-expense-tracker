@@ -212,7 +212,7 @@
           </div>
         </div>
 
-        <!-- Segmented Navigation & Cloud Backup / CSV Export -->
+        <!-- Segmented Navigation & Gmail Reconcile / Cloud Backup / CSV Export -->
         <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
           <div class="inline-flex p-1 rounded-2xl bg-[#EFECE6] border border-[#E6E1D8]">
             <button id="tabBtnEntry" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white text-[#1C1917] shadow-xs transition cursor-pointer">
@@ -222,7 +222,11 @@
               消費明細 (<span id="tabCountBadge" class="font-num">0</span>)
             </button>
           </div>
-          <button id="openCloudBoxBtn" type="button" title="Google 雲端每日自動備份設定與還原" class="px-3 py-2 rounded-2xl border border-[#A7F3D0] bg-[#ECFDF5]/80 hover:bg-[#ECFDF5] text-xs font-semibold text-[#0F766E] flex items-center gap-1.5 transition cursor-pointer">
+          <button id="openGmailBoxBtn" type="button" title="每日自動檢查 Gmail 信用卡刷卡通知並補登漏記項目" class="px-3 py-2 rounded-2xl border border-[#A7F3D0] bg-[#ECFDF5]/90 hover:bg-[#ECFDF5] text-xs font-semibold text-[#0F766E] flex items-center gap-1.5 transition cursor-pointer">
+            <span id="gmailStatusDot" class="w-2 h-2 rounded-full bg-[#0F766E]"></span>
+            <span>📧 Gmail 對帳</span>
+          </button>
+          <button id="openCloudBoxBtn" type="button" title="Google 雲端每日自動備份設定與還原" class="px-3 py-2 rounded-2xl border border-[#E6E1D8] bg-[#FAF8F4] hover:bg-[#EFECE6] text-xs font-semibold text-[#57534E] flex items-center gap-1.5 transition cursor-pointer">
             <span id="cloudStatusDot" class="w-2 h-2 rounded-full bg-amber-500"></span>
             <span>☁️ 雲端備份</span>
           </button>
@@ -258,16 +262,16 @@
         <button id="statusBannerClose" type="button" class="text-xs font-semibold underline opacity-80 hover:opacity-100 cursor-pointer shrink-0">關閉</button>
       </div>
 
-      <!-- Google Cloud Auto-Backup & Restore Drawer -->
-      <div id="cloudBackupBox" class="hidden rounded-2xl border border-[#A7F3D0] bg-[#FAF8F4] p-4 space-y-3.5">
+      <!-- Gmail Credit Card Alert Auto-Reconcile & Cloud Auto-Backup Center -->
+      <div id="cloudBackupBox" class="hidden rounded-2xl border border-[#A7F3D0] bg-[#FAF8F4] p-4 space-y-4">
         <div class="flex items-start justify-between gap-2">
           <div class="space-y-0.5">
             <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-xs sm:text-sm font-bold text-[#0F766E]">☁️ Google 雲端每日自動備份與還原</span>
-              <span id="cloudBackupBadge" class="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold">今日待備份</span>
+              <span class="text-xs sm:text-sm font-bold text-[#0F766E]">📧 Gmail 刷卡通知自動核對補登 ＆ ☁️ Google 雲端每日備份</span>
+              <span id="cloudBackupBadge" class="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold">今日待同步</span>
             </div>
             <p id="lastBackupTimeText" class="text-xs text-[#57534E]">
-              尚未執行今日雲端備份 ・ 目標雲端資料夾：<a href="https://drive.google.com/drive/folders/1LDbW8D5f17IADGWVS3iyCZK0tn-ZXJZx" target="_blank" rel="noopener noreferrer" class="text-[#0F766E] font-semibold underline">Anti / 語音刷卡記帳_自動備份 ↗</a>
+              尚未執行今日雲端同步 ・ 目標雲端資料夾：<a href="https://drive.google.com/drive/folders/1LDbW8D5f17IADGWVS3iyCZK0tn-ZXJZx" target="_blank" rel="noopener noreferrer" class="text-[#0F766E] font-semibold underline">Anti / 語音刷卡記帳_自動備份 ↗</a>
             </p>
           </div>
           <button id="closeCloudBoxBtn" type="button" class="px-2.5 py-1 rounded-xl border border-[#E6E1D8] bg-white text-xs text-[#57534E] cursor-pointer shrink-0">
@@ -275,7 +279,60 @@
           </button>
         </div>
 
-        <!-- Daily Auto-Backup Switch + Action Buttons -->
+        <!-- SECTION A: Gmail Credit Card Notification Daily Check & Auto-Reconciliation -->
+        <div id="gmailSectionCard" class="rounded-2xl bg-white border border-[#A7F3D0] p-3.5 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="space-y-0.5">
+              <div class="flex items-center gap-2">
+                <span class="text-xs sm:text-sm font-bold text-[#1C1917]">📧 每日自動檢查 Gmail 信用卡刷卡通知</span>
+                <span id="gmailCheckBadge" class="text-[11px] px-2 py-0.5 rounded-full bg-[#ECFDF5] text-[#0F766E] border border-[#A7F3D0] font-semibold">自動核對已開啟</span>
+              </div>
+              <p class="text-xs text-[#57534E]">
+                自動掃描 Gmail 裡的銀行刷卡通知信，比對「日期＋金額」是否已輸入；若已輸入則自動略過，若忘記輸入則自動幫您補登！
+              </p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-[#E6E1D8]">
+            <label class="flex items-center gap-2 text-xs font-semibold text-[#1C1917] cursor-pointer select-none">
+              <input id="dailyGmailCheckToggle" type="checkbox" checked class="accent-[#0F766E] w-4 h-4 rounded cursor-pointer" />
+              <span>每天自動檢查 Gmail 刷卡通知並補登未輸入紀錄</span>
+            </label>
+
+            <div class="flex items-center gap-2 flex-wrap">
+              <button id="scanGmailNowBtn" type="button" class="px-3.5 py-2 rounded-xl bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-semibold shadow-2xs active:scale-95 transition cursor-pointer">
+                📧 立即掃描 Gmail 並核對補登
+              </button>
+              <button id="demoGmailReconcileBtn" type="button" class="px-3 py-2 rounded-xl border border-[#A7F3D0] bg-[#ECFDF5]/60 hover:bg-[#ECFDF5] text-[#0F766E] text-xs font-semibold active:scale-95 transition cursor-pointer">
+                🧪 模擬 Gmail 對帳補登示範
+              </button>
+            </div>
+          </div>
+
+          <!-- Paste Single Bank Email / SMS Text to Test Reconciliation -->
+          <div class="flex items-center gap-2">
+            <input
+              id="pasteBankEmailInput"
+              type="text"
+              placeholder="或貼上銀行刷卡通知信內容測試核對：例「國泰世華通知：您於 2026/11/07 在全聯刷卡 NT$680」"
+              class="field-input flex-1 rounded-xl px-3 py-1.5 text-xs placeholder:text-[#8A847C]"
+            />
+            <button id="runPasteBankEmailBtn" type="button" class="px-3 py-1.5 rounded-xl bg-[#EFECE6] hover:bg-[#E5E0D5] text-[#1C1917] text-xs font-semibold cursor-pointer shrink-0">
+              核對並補登
+            </button>
+          </div>
+
+          <!-- Gmail Reconciliation Report Box -->
+          <div id="gmailReconcileReportBox" class="hidden rounded-xl bg-[#FAF8F4] border border-[#E6E1D8] p-3 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <span id="gmailReportTitle" class="text-xs font-bold text-[#1C1917]">Gmail 刷卡通知核對報告</span>
+              <span id="gmailReportTime" class="font-num text-[11px] text-[#8A847C]"></span>
+            </div>
+            <div id="gmailReportList" class="space-y-1.5 max-h-44 overflow-y-auto"></div>
+          </div>
+        </div>
+
+        <!-- SECTION B: Daily Auto-Backup Switch + Action Buttons -->
         <div class="flex flex-wrap items-center justify-between gap-2.5 pt-1 border-t border-[#E6E1D8]">
           <label class="flex items-center gap-2 text-xs font-semibold text-[#1C1917] cursor-pointer select-none">
             <input id="dailyAutoBackupToggle" type="checkbox" checked class="accent-[#0F766E] w-4 h-4 rounded cursor-pointer" />
@@ -283,7 +340,7 @@
           </label>
 
           <div class="flex items-center gap-2 flex-wrap">
-            <button id="backupNowBtn" type="button" class="px-3.5 py-2 rounded-xl bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-semibold shadow-2xs active:scale-95 transition cursor-pointer">
+            <button id="backupNowBtn" type="button" class="px-3.5 py-2 rounded-xl bg-[#1C1917] hover:bg-[#332E2A] text-white text-xs font-semibold shadow-2xs active:scale-95 transition cursor-pointer">
               ☁️ 立即備份至 Google 雲端
             </button>
             <button id="restoreFromCloudBtn" type="button" class="px-3 py-2 rounded-xl border border-[#A7F3D0] bg-white hover:bg-[#ECFDF5] text-[#0F766E] text-xs font-semibold active:scale-95 transition cursor-pointer">
@@ -299,9 +356,9 @@
         <!-- Google Apps Script Webhook URL Setup -->
         <div class="rounded-xl bg-white border border-[#E6E1D8] p-3 space-y-2">
           <div class="flex items-center justify-between gap-2 flex-wrap">
-            <span class="text-xs font-semibold text-[#1C1917]">🔗 Google 雲端硬碟自動同步連結（設定一次即可全自動背景備份）</span>
+            <span class="text-xs font-semibold text-[#1C1917]">🔗 Google Apps Script 連結（同時驅動「Gmail 刷卡通知掃描」與「Google 雲端硬碟每日備份」）</span>
             <button id="toggleGasGuideBtn" type="button" class="text-xs text-[#0F766E] font-semibold hover:underline cursor-pointer">
-              📋 複製專屬雲端腳本與教學
+              📋 複製專屬雲端＋Gmail 腳本與教學
             </button>
           </div>
           <div class="flex items-center gap-2">
@@ -320,15 +377,16 @@
           <div id="gasGuideSection" class="hidden pt-2 border-t border-[#E6E1D8] space-y-2 text-xs text-[#57534E]">
             <p class="leading-relaxed">
               1. 點擊下方「複製腳本程式碼」，前往 <a href="https://script.google.com/home/start" target="_blank" rel="noopener noreferrer" class="text-[#0F766E] underline font-semibold">Google Apps Script</a> 點選「新專案」貼上。<br/>
-              2. 點擊右上角「部署 → 新增部署作業」，類型選「網頁應用程式」，執行身分選「我」，誰可以存取選「所有人」，部署後複製網址貼回上方欄位即可（已預先綁定您的 <code class="px-1 py-0.5 rounded bg-[#FAF8F4]">Anti / 語音刷卡記帳_自動備份</code> 資料夾）。
+              2. 點擊右上角「部署 → 新增部署作業」，類型選「網頁應用程式」，執行身分選「我」，誰可以存取選「所有人」，授權 Gmail 與 Drive 權限後複製網址貼回上方欄位。<br/>
+              3. （選配）在編輯器內執行一次 <code class="px-1 py-0.5 rounded bg-[#FAF8F4]">setupDailyTrigger()</code>，Google 雲端就會每天定時自動掃描您的 Gmail 刷卡信並自動補登至雲端備份！
             </p>
             <div class="flex items-center justify-between">
-              <span class="text-[11px] font-semibold text-[#8A847C]">Google Apps Script 程式碼（已綁定資料夾 ID：1LDbW8D5f17IADGWVS3iyCZK0tn-ZXJZx）</span>
+              <span class="text-[11px] font-semibold text-[#8A847C]">Google Apps Script 程式碼（含 Gmail 刷卡通知解析＋自動核對補登＋雲端備份）</span>
               <button id="copyGasCodeBtn" type="button" class="px-2.5 py-1 rounded-lg bg-[#0F766E] text-white text-xs font-semibold cursor-pointer">
                 複製腳本程式碼
               </button>
             </div>
-            <textarea id="gasCodeTextarea" readonly rows="5" class="w-full rounded-lg border border-[#E6E1D8] bg-[#FAF8F4] p-2 text-[11px] font-mono text-[#1C1917] focus:outline-none"></textarea>
+            <textarea id="gasCodeTextarea" readonly rows="6" class="w-full rounded-lg border border-[#E6E1D8] bg-[#FAF8F4] p-2 text-[11px] font-mono text-[#1C1917] focus:outline-none"></textarea>
           </div>
         </div>
       </div>
@@ -1264,6 +1322,9 @@
       recentPreviewList.innerHTML = '';
       records.slice(0, 3).forEach((rec) => {
         const initial = (rec.location || '刷').trim().charAt(0);
+        const gmailTag = rec.source === 'gmail'
+          ? '<span class="px-1.5 py-0.5 rounded-md bg-[#ECFDF5] text-[#0F766E] border border-[#A7F3D0] text-[10px] font-semibold shrink-0">📧 Gmail 補登</span>'
+          : '';
         const row = document.createElement('div');
         row.className = 'flex items-center justify-between gap-3 py-2.5 px-3.5 rounded-2xl bg-[#FAF8F4] border border-[#E6E1D8] hover:border-[#D5CFC4] transition';
         row.innerHTML = `
@@ -1272,8 +1333,9 @@
               ${escapeHtml(initial)}
             </div>
             <div class="min-w-0">
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="text-xs sm:text-sm font-bold text-[#1C1917] truncate">${escapeHtml(rec.location)}</span>
+                ${gmailTag}
                 <span class="font-num text-[11px] text-[#8A847C] shrink-0">${rec.date.slice(5)}</span>
               </div>
               <p class="text-xs text-[#57534E] truncate">${escapeHtml(rec.item)}</p>
@@ -1312,11 +1374,14 @@
       emptyState.classList.add('hidden');
 
       filtered.forEach((rec) => {
+        const gmailTag = rec.source === 'gmail'
+          ? '<span class="ml-1.5 px-1.5 py-0.5 rounded-md bg-[#ECFDF5] text-[#0F766E] border border-[#A7F3D0] text-[10px] font-semibold">📧 Gmail 補登</span>'
+          : '';
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-[#FAF8F4] transition';
         tr.innerHTML = `
           <td class="py-2.5 px-3 whitespace-nowrap font-num text-[#8A847C]">${rec.date}</td>
-          <td class="py-2.5 px-3 font-semibold text-[#1C1917]">${escapeHtml(rec.location)}</td>
+          <td class="py-2.5 px-3 font-semibold text-[#1C1917]">${escapeHtml(rec.location)}${gmailTag}</td>
           <td class="py-2.5 px-3 text-[#57534E]">${escapeHtml(rec.item)}</td>
           <td class="py-2.5 px-3 text-right font-num font-bold text-[#1C1917]">${formatCurrency(rec.amount)}</td>
           <td class="py-2.5 px-3 text-right whitespace-nowrap">
@@ -1381,20 +1446,33 @@
     });
 
     // =========================================================================
-    // Google Cloud Daily Auto-Backup & Restore System
+    // Google Cloud Daily Auto-Backup & Gmail Credit Card Alert Auto-Reconciliation
     // Target Drive Folder: Anti / 語音刷卡記帳_自動備份 (1LDbW8D5f17IADGWVS3iyCZK0tn-ZXJZx)
     // =========================================================================
     const CLOUD_CFG_KEY = 'cc_voice_cloud_cfg_v1';
     const DRIVE_FOLDER_ID = '1LDbW8D5f17IADGWVS3iyCZK0tn-ZXJZx';
     const DRIVE_FOLDER_URL = 'https://drive.google.com/drive/folders/' + DRIVE_FOLDER_ID;
 
+    const openGmailBoxBtn = document.getElementById('openGmailBoxBtn');
     const openCloudBoxBtn = document.getElementById('openCloudBoxBtn');
     const closeCloudBoxBtn = document.getElementById('closeCloudBoxBtn');
     const cloudBackupBox = document.getElementById('cloudBackupBox');
+    const gmailStatusDot = document.getElementById('gmailStatusDot');
     const cloudStatusDot = document.getElementById('cloudStatusDot');
     const cloudBackupBadge = document.getElementById('cloudBackupBadge');
     const lastBackupTimeText = document.getElementById('lastBackupTimeText');
     const dailyAutoBackupToggle = document.getElementById('dailyAutoBackupToggle');
+    const dailyGmailCheckToggle = document.getElementById('dailyGmailCheckToggle');
+    const gmailCheckBadge = document.getElementById('gmailCheckBadge');
+    const scanGmailNowBtn = document.getElementById('scanGmailNowBtn');
+    const demoGmailReconcileBtn = document.getElementById('demoGmailReconcileBtn');
+    const pasteBankEmailInput = document.getElementById('pasteBankEmailInput');
+    const runPasteBankEmailBtn = document.getElementById('runPasteBankEmailBtn');
+    const gmailReconcileReportBox = document.getElementById('gmailReconcileReportBox');
+    const gmailReportTitle = document.getElementById('gmailReportTitle');
+    const gmailReportTime = document.getElementById('gmailReportTime');
+    const gmailReportList = document.getElementById('gmailReportList');
+
     const backupNowBtn = document.getElementById('backupNowBtn');
     const restoreFromCloudBtn = document.getElementById('restoreFromCloudBtn');
     const importFileBtn = document.getElementById('importFileBtn');
@@ -1406,7 +1484,7 @@
     const gasCodeTextarea = document.getElementById('gasCodeTextarea');
     const copyGasCodeBtn = document.getElementById('copyGasCodeBtn');
 
-    const GAS_SCRIPT_TEMPLATE = `// Google Apps Script：語音刷卡記帳 — 每日自動備份至 Google 雲端硬碟
+    const GAS_SCRIPT_TEMPLATE = `// Google Apps Script：語音刷卡記帳 — Gmail 刷卡通知自動核對補登 ＆ Google 雲端每日備份
 // 已預先綁定您的雲端資料夾：Anti / 語音刷卡記帳_自動備份
 const FOLDER_ID = '${DRIVE_FOLDER_ID}';
 
@@ -1415,7 +1493,7 @@ function doPost(e) {
   const payload = JSON.parse(e.postData.contents);
   const dateStr = payload.date || Utilities.formatDate(new Date(), 'Asia/Taipei', 'yyyy-MM-dd');
 
-  // 1. 儲存/更新最新完整 JSON 備份（供跨裝置一鍵還原使用）
+  // 1. 儲存/更新最新完整 JSON 備份
   saveOrUpdateFile(folder, '信用卡消費明細_最新完整備份.json', JSON.stringify(payload.records || [], null, 2), MimeType.PLAIN_TEXT);
 
   // 2. 儲存/更新當日 CSV 對帳單備份
@@ -1427,7 +1505,14 @@ function doPost(e) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-function doGet() {
+function doGet(e) {
+  const action = (e && e.parameter && e.parameter.action) ? e.parameter.action : 'backup';
+  if (action === 'scanGmail') {
+    const alerts = scanGmailCardAlerts(7);
+    return ContentService.createTextOutput(JSON.stringify({ ok: true, alerts: alerts }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
   const folder = DriveApp.getFolderById(FOLDER_ID);
   const files = folder.getFilesByName('信用卡消費明細_最新完整備份.json');
   if (files.hasNext()) {
@@ -1435,6 +1520,82 @@ function doGet() {
     return ContentService.createTextOutput(content).setMimeType(ContentService.MimeType.JSON);
   }
   return ContentService.createTextOutput('[]').setMimeType(ContentService.MimeType.JSON);
+}
+
+// 掃描最近 N 天 Gmail 中的信用卡刷卡/消費通知信
+function scanGmailCardAlerts(daysBack) {
+  const query = 'newer_than:' + (daysBack || 7) + 'd (刷卡 OR 消費通知 OR 信用卡交易 OR 授權通知 OR 刷卡消費 OR 簽帳通知) (NT$ OR TWD OR 元)';
+  const threads = GmailApp.search(query, 0, 25);
+  const alerts = [];
+
+  threads.forEach(function(thread) {
+    const msgs = thread.getMessages();
+    msgs.forEach(function(msg) {
+      const subject = msg.getSubject() || '';
+      const body = msg.getPlainBody() || msg.getBody().replace(/<[^>]+>/g, ' ');
+      const fullText = subject + '\\n' + body;
+      const msgDate = Utilities.formatDate(msg.getDate(), 'Asia/Taipei', 'yyyy-MM-dd');
+
+      // 解析金額 (NT$ / TWD / 元)
+      const amtMatch = fullText.match(/(?:消費金額|交易金額|刷卡金額|授權金額|金額|NT\\$|TWD)\\s*[:：]?\\s*(?:NT\\$|TWD|\\$)?\\s*([\\d,]+)\\s*(?:元)?/i)
+                    || fullText.match(/([\\d,]+)\\s*元/);
+      if (!amtMatch) return;
+      const amount = parseInt(amtMatch[1].replace(/,/g, ''), 10);
+      if (!amount || amount <= 0) return;
+
+      // 解析商店/消費地點
+      const locMatch = fullText.match(/(?:特約商店|商店名稱|消費商店|交易商店|消費地點|商戶|通路|於|在)\\s*[:：]?\\s*([^\\n\\r，。；,()（）]{2,24})/);
+      const bankMatch = subject.match(/(中國信託|國泰世華|玉山|台新|富邦|永豐|聯邦|星展|匯豐|第一銀行|華南|兆豐|渣打|LINE Bank)/);
+      const bankName = bankMatch ? bankMatch[1] : '信用卡';
+      const location = locMatch ? locMatch[1].trim() : (bankName + '刷卡消費');
+
+      alerts.push({
+        gmailId: msg.getId(),
+        date: msgDate,
+        location: location,
+        item: bankName + '刷卡通知 (' + subject.slice(0, 22) + ')',
+        amount: amount
+      });
+    });
+  });
+  return alerts;
+}
+
+// 每日定時排程：自動掃描 Gmail 並核對補登至雲端備份檔
+function dailyGmailAndBackupJob() {
+  const folder = DriveApp.getFolderById(FOLDER_ID);
+  let records = [];
+  const files = folder.getFilesByName('信用卡消費明細_最新完整備份.json');
+  if (files.hasNext()) {
+    try { records = JSON.parse(files.next().getBlob().getDataAsString('UTF-8')) || []; } catch (e) {}
+  }
+  const alerts = scanGmailCardAlerts(3);
+  let added = 0;
+  alerts.forEach(function(a) {
+    const exists = records.some(function(r) {
+      return r.gmailId === a.gmailId || (Number(r.amount) === Number(a.amount) && r.date === a.date);
+    });
+    if (!exists) {
+      records.unshift({
+        id: 'gmail-' + a.gmailId,
+        gmailId: a.gmailId,
+        source: 'gmail',
+        date: a.date,
+        location: a.location,
+        item: a.item,
+        amount: a.amount
+      });
+      added++;
+    }
+  });
+  if (added > 0) {
+    saveOrUpdateFile(folder, '信用卡消費明細_最新完整備份.json', JSON.stringify(records, null, 2), MimeType.PLAIN_TEXT);
+  }
+}
+
+// 執行一次此函式即可在 Google 雲端註冊每日自動對帳排程
+function setupDailyTrigger() {
+  ScriptApp.newTrigger('dailyGmailAndBackupJob').timeBased().everyDays(1).atHour(21).create();
 }
 
 function saveOrUpdateFile(folder, filename, content, mimeType) {
@@ -1450,9 +1611,12 @@ function saveOrUpdateFile(folder, filename, content, mimeType) {
 
     let cloudConfig = {
       enabled: true,
+      gmailAutoCheck: true,
       webhookUrl: '',
       lastBackupDate: '',
-      lastBackupTime: ''
+      lastBackupTime: '',
+      lastGmailCheckDate: '',
+      lastGmailCheckTime: ''
     };
 
     try {
@@ -1463,6 +1627,7 @@ function saveOrUpdateFile(folder, filename, content, mimeType) {
     } catch (e) {}
 
     dailyAutoBackupToggle.checked = cloudConfig.enabled !== false;
+    dailyGmailCheckToggle.checked = cloudConfig.gmailAutoCheck !== false;
     gasWebhookInput.value = cloudConfig.webhookUrl || '';
 
     function saveCloudConfig() {
@@ -1475,20 +1640,34 @@ function saveOrUpdateFile(folder, filename, content, mimeType) {
     function updateCloudStatusUi() {
       const todayStr = getTodayStr(0);
       const isBackedUpToday = cloudConfig.lastBackupDate === todayStr;
+      const isGmailCheckedToday = cloudConfig.lastGmailCheckDate === todayStr;
 
       if (isBackedUpToday) {
         cloudStatusDot.className = 'w-2 h-2 rounded-full bg-[#0F766E]';
         cloudBackupBadge.className = 'text-[11px] px-2 py-0.5 rounded-full bg-[#ECFDF5] text-[#0F766E] border border-[#A7F3D0] font-semibold';
-        cloudBackupBadge.textContent = '✓ 今日已備份';
+        cloudBackupBadge.textContent = '✓ 今日已同步';
       } else {
         cloudStatusDot.className = 'w-2 h-2 rounded-full bg-amber-500';
         cloudBackupBadge.className = 'text-[11px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold';
         cloudBackupBadge.textContent = cloudConfig.webhookUrl ? '待自動同步' : '今日待備份';
       }
 
+      if (isGmailCheckedToday) {
+        gmailStatusDot.className = 'w-2 h-2 rounded-full bg-[#0F766E]';
+        gmailCheckBadge.textContent = `✓ 今日已檢查 (${cloudConfig.lastGmailCheckTime.slice(11) || '完成'})`;
+      } else {
+        gmailStatusDot.className = 'w-2 h-2 rounded-full bg-amber-500';
+        gmailCheckBadge.textContent = cloudConfig.gmailAutoCheck ? '自動核對已開啟' : '自動核對已暫停';
+      }
+
       const timeDisplay = cloudConfig.lastBackupTime ? `上次雲端備份：${cloudConfig.lastBackupTime}` : '尚未執行今日雲端備份';
       lastBackupTimeText.innerHTML = `${escapeHtml(timeDisplay)} ・ 雲端資料夾：<a href="${DRIVE_FOLDER_URL}" target="_blank" rel="noopener noreferrer" class="text-[#0F766E] font-semibold underline">Anti / 語音刷卡記帳_自動備份 ↗</a>`;
     }
+
+    openGmailBoxBtn.addEventListener('click', () => {
+      cloudBackupBox.classList.remove('hidden');
+      document.getElementById('gmailSectionCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
 
     openCloudBoxBtn.addEventListener('click', () => {
       cloudBackupBox.classList.toggle('hidden');
@@ -1516,14 +1695,21 @@ function saveOrUpdateFile(folder, filename, content, mimeType) {
     dailyAutoBackupToggle.addEventListener('change', () => {
       cloudConfig.enabled = dailyAutoBackupToggle.checked;
       saveCloudConfig();
-      showToast(cloudConfig.enabled ? '已開啟每日自動備份' : '已暫停每日自動備份');
+      showToast(cloudConfig.enabled ? '已開啟每日自動雲端備份' : '已暫停每日自動雲端備份');
+    });
+
+    dailyGmailCheckToggle.addEventListener('change', () => {
+      cloudConfig.gmailAutoCheck = dailyGmailCheckToggle.checked;
+      saveCloudConfig();
+      showToast(cloudConfig.gmailAutoCheck ? '已開啟每日自動檢查 Gmail 刷卡通知' : '已暫停每日自動檢查 Gmail');
     });
 
     saveGasUrlBtn.addEventListener('click', () => {
       cloudConfig.webhookUrl = gasWebhookInput.value.trim();
       saveCloudConfig();
       if (cloudConfig.webhookUrl) {
-        showToast('已儲存雲端同步網址，正在執行首次自動備份...');
+        showToast('已儲存連結，正在自動檢查 Gmail 刷卡通知並備份...');
+        scanGmailAndReconcile({ silent: false });
         performCloudBackup({ silent: false, forceManual: false });
       } else {
         showToast('已清除雲端同步網址');
@@ -1539,6 +1725,236 @@ function saveOrUpdateFile(folder, filename, content, mimeType) {
       const min = String(d.getMinutes()).padStart(2, '0');
       return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
     }
+
+    // =========================================================================
+    // Smart Gmail Credit Card Notification Parser & Reconciliation Engine
+    // =========================================================================
+    function daysBetweenDates(d1, d2) {
+      const t1 = new Date(d1).getTime();
+      const t2 = new Date(d2).getTime();
+      if (isNaN(t1) || isNaN(t2)) return 999;
+      return Math.abs(t1 - t2) / (1000 * 60 * 60 * 24);
+    }
+
+    // Check if an incoming Gmail alert is already recorded in `records`
+    function findMatchingExistingRecord(alertItem) {
+      return records.find((r) => {
+        if (alertItem.gmailId && r.gmailId && r.gmailId === alertItem.gmailId) {
+          return true;
+        }
+        // Match if amount is identical AND date is same day (or within 1 day for late-night posting)
+        const sameAmount = Number(r.amount) === Number(alertItem.amount);
+        const closeDate = r.date === alertItem.date || daysBetweenDates(r.date, alertItem.date) <= 1;
+        return sameAmount && closeDate;
+      });
+    }
+
+    function reconcileGmailTransactions(incomingAlerts, sourceLabel = 'Gmail 刷卡通知') {
+      if (!Array.isArray(incomingAlerts) || incomingAlerts.length === 0) {
+        gmailReconcileReportBox.classList.remove('hidden');
+        gmailReportTitle.textContent = `${sourceLabel}：未發現新的刷卡通知信`;
+        gmailReportTime.textContent = getNowTimeStr();
+        gmailReportList.innerHTML = `<div class="text-xs text-[#8A847C] py-1">最近信箱中沒有檢測到需要補登的信用卡消費通知。</div>`;
+        return { matchedCount: 0, addedCount: 0 };
+      }
+
+      let matchedCount = 0;
+      let addedCount = 0;
+      const reportRowsHtml = [];
+
+      // Process in chronological order so newest ends up on top
+      const sortedAlerts = [...incomingAlerts];
+      sortedAlerts.forEach((alertObj) => {
+        const existing = findMatchingExistingRecord(alertObj);
+        if (existing) {
+          matchedCount++;
+          reportRowsHtml.push(`
+            <div class="flex items-center justify-between gap-2 py-1.5 px-2.5 rounded-xl bg-white border border-[#E6E1D8] text-xs">
+              <div class="min-w-0">
+                <span class="font-semibold text-[#57534E]">${escapeHtml(alertObj.location)}</span>
+                <span class="text-[#8A847C] ml-1">(${alertObj.date} ・ ${escapeHtml(alertObj.item)})</span>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="font-num font-semibold text-[#57534E]">${formatCurrency(alertObj.amount)}</span>
+                <span class="px-2 py-0.5 rounded-full bg-[#EFECE6] text-[#57534E] text-[11px] font-semibold">✓ 已輸入過（略過）</span>
+              </div>
+            </div>
+          `);
+        } else {
+          addedCount++;
+          const newRec = {
+            id: 'gmail-' + (alertObj.gmailId || Date.now() + '-' + Math.random().toString(36).slice(2, 6)),
+            gmailId: alertObj.gmailId || null,
+            source: 'gmail',
+            date: alertObj.date || getTodayStr(0),
+            location: alertObj.location || '信用卡刷卡',
+            item: alertObj.item || 'Gmail 刷卡通知自動補登',
+            amount: Number(alertObj.amount)
+          };
+          records.unshift(newRec);
+          reportRowsHtml.push(`
+            <div class="flex items-center justify-between gap-2 py-1.5 px-2.5 rounded-xl bg-[#ECFDF5]/70 border border-[#A7F3D0] text-xs">
+              <div class="min-w-0">
+                <span class="font-bold text-[#0F766E]">${escapeHtml(newRec.location)}</span>
+                <span class="text-[#57534E] ml-1">(${newRec.date} ・ ${escapeHtml(newRec.item)})</span>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="font-num font-bold text-[#0F766E]">${formatCurrency(newRec.amount)}</span>
+                <span class="px-2 py-0.5 rounded-full bg-[#0F766E] text-white text-[11px] font-semibold">＋ 未輸入，已自動補登</span>
+              </div>
+            </div>
+          `);
+        }
+      });
+
+      cloudConfig.lastGmailCheckDate = getTodayStr(0);
+      cloudConfig.lastGmailCheckTime = getNowTimeStr();
+      saveCloudConfig();
+
+      if (addedCount > 0) {
+        saveToStorage();
+        renderRecords();
+      }
+
+      gmailReconcileReportBox.classList.remove('hidden');
+      gmailReportTitle.textContent = `${sourceLabel}核對完成：共 ${incomingAlerts.length} 筆（${matchedCount} 筆已存在略過、${addedCount} 筆自動補登）`;
+      gmailReportTime.textContent = cloudConfig.lastGmailCheckTime;
+      gmailReportList.innerHTML = reportRowsHtml.join('');
+
+      if (addedCount > 0) {
+        showToast(`📧 Gmail 對帳完成：已自動補登 ${addedCount} 筆漏記刷卡！`);
+      } else {
+        showToast(`📧 Gmail 對帳完成：${matchedCount} 筆皆已輸入過，無漏記！`);
+      }
+      return { matchedCount, addedCount };
+    }
+
+    // Parse raw pasted bank email or SMS notification string
+    function parseBankNotificationText(rawText) {
+      const txt = rawText.trim();
+      let date = getTodayStr(0);
+      const ymdMatch = txt.match(/(\d{4})[\/\-年](\d{1,2})[\/\-月](\d{1,2})/);
+      if (ymdMatch) {
+        date = `${ymdMatch[1]}-${String(ymdMatch[2]).padStart(2, '0')}-${String(ymdMatch[3]).padStart(2, '0')}`;
+      } else {
+        const mdMatch = txt.match(/(\d{1,2})[\/\-月](\d{1,2})[日號]?/);
+        if (mdMatch) {
+          const yyyy = new Date().getFullYear();
+          date = `${yyyy}-${String(mdMatch[1]).padStart(2, '0')}-${String(mdMatch[2]).padStart(2, '0')}`;
+        }
+      }
+
+      const amtMatch = txt.match(/(?:消費金額|交易金額|刷卡金額|授權金額|金額|刷卡|消費|NT\$|TWD|\$)\s*[:：]?\s*(?:NT\$|TWD|\$)?\s*([\d,]+)\s*(?:元)?/i)
+                    || txt.match(/([\d,]+)\s*元/);
+      const amount = amtMatch ? parseInt(amtMatch[1].replace(/,/g, ''), 10) : null;
+
+      const bankMatch = txt.match(/(中國信託|國泰世華|玉山銀行|玉山|台新銀行|台新|台北富邦|富邦|永豐銀行|永豐|聯邦銀行|聯邦|星展銀行|星展|匯豐|第一銀行|華南|兆豐|渣打|LINE Bank)/);
+      const bankName = bankMatch ? bankMatch[1] : '銀行信用卡';
+
+      let location = '';
+      const locMatch = txt.match(/(?:特約商店|商店名稱|消費商店|交易商店|消費地點|商戶|於|在)\s*[:：]?\s*([^\s，。；,()（）]{2,20})/);
+      if (locMatch) {
+        location = locMatch[1].replace(/(刷卡|消費|交易|購買).*$/, '').trim();
+      }
+      if (!location) {
+        const parsedSpoken = parseSpokenExpense(txt);
+        location = parsedSpoken.location || (bankName + '特約商店');
+      }
+
+      return {
+        gmailId: 'paste-' + date + '-' + (amount || 0) + '-' + location,
+        date,
+        location,
+        item: `${bankName}刷卡通知自動補登`,
+        amount
+      };
+    }
+
+    async function scanGmailAndReconcile({ silent = false } = {}) {
+      const webhookUrl = (cloudConfig.webhookUrl || '').trim();
+      if (!webhookUrl) {
+        if (!silent) {
+          cloudBackupBox.classList.remove('hidden');
+          gasGuideSection.classList.remove('hidden');
+          showBanner('請先完成下方「Google Apps Script 連結」設定（只需 1 分鐘），系統即可每日自動掃描您的真實 Gmail 刷卡通知！您也可以先點「🧪 模擬 Gmail 對帳補登示範」體驗核對流程。');
+        }
+        return;
+      }
+
+      try {
+        if (!silent) {
+          scanGmailNowBtn.textContent = '📧 正在掃描 Gmail 刷卡信...';
+          scanGmailNowBtn.disabled = true;
+        }
+        const sep = webhookUrl.includes('?') ? '&' : '?';
+        const res = await fetch(`${webhookUrl}${sep}action=scanGmail`);
+        const data = await res.json();
+        if (data && Array.isArray(data.alerts)) {
+          reconcileGmailTransactions(data.alerts, 'Gmail 實時掃描');
+        }
+      } catch (err) {
+        if (!silent) {
+          showBanner('⚠️ 無法連線至 Gmail 掃描腳本，請確認您的 Google Apps Script 已更新為最新程式碼並已授權 Gmail 權限。');
+        }
+      } finally {
+        if (!silent) {
+          scanGmailNowBtn.textContent = '📧 立即掃描 Gmail 並核對補登';
+          scanGmailNowBtn.disabled = false;
+        }
+      }
+    }
+
+    scanGmailNowBtn.addEventListener('click', () => {
+      scanGmailAndReconcile({ silent: false });
+    });
+
+    // Interactive Demo of Gmail Credit Card Notification Reconciliation
+    demoGmailReconcileBtn.addEventListener('click', () => {
+      const todayStr = getTodayStr(0);
+      const yesterdayStr = getTodayStr(-1);
+      // Grab an existing record if available so the user clearly sees 1 matched (skipped) + 2 missing (auto-entered)
+      const existingSample = records[0] || { date: todayStr, location: '星巴克', amount: 245 };
+
+      const simulatedGmailAlerts = [
+        {
+          gmailId: 'demo-gmail-existing-' + existingSample.amount,
+          date: existingSample.date,
+          location: existingSample.location,
+          item: '國泰世華 CUBE 卡消費通知（核對相符）',
+          amount: existingSample.amount
+        },
+        {
+          gmailId: 'demo-gmail-hsr-' + todayStr,
+          date: todayStr,
+          location: '台灣高鐵 T-EX',
+          item: '中國信託 LINE Pay 卡刷卡通知（信箱漏記補登）',
+          amount: 1490
+        },
+        {
+          gmailId: 'demo-gmail-eslite-' + yesterdayStr,
+          date: yesterdayStr,
+          location: '誠品生活松菸店',
+          item: '玉山銀行 U Bear 卡交易通知（信箱漏記補登）',
+          amount: 420
+        }
+      ];
+
+      reconcileGmailTransactions(simulatedGmailAlerts, '模擬 Gmail 信箱');
+    });
+
+    runPasteBankEmailBtn.addEventListener('click', () => {
+      let raw = pasteBankEmailInput.value.trim();
+      if (!raw) {
+        raw = `【玉山銀行】信用卡消費通知：您於 ${getTodayStr(0)} 在 屈臣氏 刷卡消費 NT$560 元`;
+        pasteBankEmailInput.value = raw;
+      }
+      const parsedAlert = parseBankNotificationText(raw);
+      if (!parsedAlert.amount || isNaN(parsedAlert.amount)) {
+        showBanner('無法從通知內容中辨識出刷卡金額，請確認包含金額數字（如 NT$560）。');
+        return;
+      }
+      reconcileGmailTransactions([parsedAlert], '銀行刷卡通知文字');
+    });
 
     async function performCloudBackup({ silent = false, forceManual = false } = {}) {
       if (records.length === 0) {
@@ -1593,7 +2009,6 @@ function saveOrUpdateFile(folder, filename, content, mimeType) {
         const fileBlob = new Blob(['\uFEFF' + csvStr], { type: 'text/csv;charset=utf-8;' });
         const fileObj = new File([fileBlob], filename, { type: 'text/csv' });
 
-        // Try Mobile Native Share Sheet (allows 1-tap "Save to Google Drive" on iOS / Android)
         if (navigator.canShare && navigator.canShare({ files: [fileObj] })) {
           try {
             await navigator.share({
@@ -1611,7 +2026,6 @@ function saveOrUpdateFile(folder, filename, content, mimeType) {
           }
         }
 
-        // Fallback: Download CSV backup file & open Google Drive folder
         const url = URL.createObjectURL(fileBlob);
         const a = document.createElement('a');
         a.href = url;
@@ -1637,12 +2051,18 @@ function saveOrUpdateFile(folder, filename, content, mimeType) {
       }, 1500);
     }
 
-    // Daily Auto-Backup Check on App Launch
-    function checkDailyAutoBackupOnLoad() {
+    // Daily Auto-Check for Gmail Alerts & Auto-Backup on App Launch
+    function checkDailyAutoTasksOnLoad() {
       updateCloudStatusUi();
-      if (!cloudConfig.enabled || records.length === 0) return;
       const todayStr = getTodayStr(0);
-      if (cloudConfig.lastBackupDate !== todayStr) {
+
+      // 1. Daily Gmail Credit Card Notification Check
+      if (cloudConfig.gmailAutoCheck && cloudConfig.webhookUrl && cloudConfig.lastGmailCheckDate !== todayStr) {
+        scanGmailAndReconcile({ silent: true });
+      }
+
+      // 2. Daily Google Drive Backup
+      if (cloudConfig.enabled && records.length > 0 && cloudConfig.lastBackupDate !== todayStr) {
         if (cloudConfig.webhookUrl) {
           performCloudBackup({ silent: true, forceManual: false });
         }
@@ -1706,7 +2126,6 @@ function saveOrUpdateFile(folder, filename, content, mimeType) {
             }
           }
 
-          // Parse CSV Backup File
           const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/).filter((l) => l.trim());
           const imported = [];
           for (let i = 0; i < lines.length; i++) {
@@ -1740,7 +2159,7 @@ function saveOrUpdateFile(folder, filename, content, mimeType) {
     });
 
     renderRecords();
-    checkDailyAutoBackupOnLoad();
+    checkDailyAutoTasksOnLoad();
   </script>
 </body>
 </html>
