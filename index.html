@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#2563eb" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="語音記帳" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>語音刷卡記帳 — 信用卡消費明細</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='28' fill='%232563eb'/%3E%3Crect x='22' y='34' width='76' height='52' rx='8' fill='none' stroke='white' stroke-width='7'/%3E%3Cline x1='22' y1='52' x2='98' y2='52' stroke='white' stroke-width='7'/%3E%3Ccircle cx='82' cy='70' r='6' fill='%23fbbf24'/%3E%3C/svg%3E" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='28' fill='%232563eb'/%3E%3Crect x='22' y='34' width='76' height='52' rx='8' fill='none' stroke='white' stroke-width='7'/%3E%3Cline x1='22' y1='52' x2='98' y2='52' stroke='white' stroke-width='7'/%3E%3Ccircle cx='82' cy='70' r='6' fill='%23fbbf24'/%3E%3C/svg%3E" />
+  <script>
+    (function() {
+      const manifest = {
+        name: "語音刷卡記帳",
+        short_name: "語音記帳",
+        start_url: "./",
+        display: "standalone",
+        background_color: "#f8fafc",
+        theme_color: "#2563eb",
+        icons: [{
+          src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='28' fill='%232563eb'/%3E%3Crect x='22' y='34' width='76' height='52' rx='8' fill='none' stroke='white' stroke-width='7'/%3E%3Cline x1='22' y1='52' x2='98' y2='52' stroke='white' stroke-width='7'/%3E%3Ccircle cx='82' cy='70' r='6' fill='%23fbbf24'/%3E%3C/svg%3E",
+          sizes: "192x192 512x512",
+          type: "image/svg+xml",
+          purpose: "any maskable"
+        }]
+      };
+      const link = document.createElement('link');
+      link.rel = 'manifest';
+      link.href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifest));
+      document.head.appendChild(link);
+    })();
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --background: #f8fafc;
+      --card: #ffffff;
+      --foreground: #0f172a;
+      --muted-foreground: #64748b;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-foreground: #ffffff;
+      --secondary: #f1f5f9;
+      --secondary-foreground: #1e293b;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: #0f172a;
+        --card: #1e293b;
+        --foreground: #f8fafc;
+        --muted-foreground: #94a3b8;
+        --border: #334155;
+        --primary: #3b82f6;
+        --primary-foreground: #ffffff;
+        --secondary: #334155;
+        --secondary-foreground: #f1f5f9;
+      }
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.85; }
+      70% { transform: scale(1.25); opacity: 0; }
+      100% { transform: scale(1.25); opacity: 0; }
+    }
+    @keyframes wave {
+      0%, 100% { height: 5px; }
+      50% { height: 18px; }
+    }
+    @keyframes field-flash {
+      0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.55); }
+      50% { box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.35); }
+      100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    }
+    .recording-ring::before {
+      content: '';
+      position: absolute;
+      inset: -5px;
+      border-radius: 9999px;
+      border: 2px solid #ef4444;
+      animation: pulse-ring 1.2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+    .wave-bar {
+      width: 3px;
+      background-color: #ef4444;
+      border-radius: 9999px;
+      animation: wave 0.75s ease-in-out infinite;
+    }
+    .wave-bar:nth-child(2) { animation-delay: 0.15s; }
+    .wave-bar:nth-child(3) { animation-delay: 0.3s; }
+    .wave-bar:nth-child(4) { animation-delay: 0.45s; }
+    .flash-highlight {
+      animation: field-flash 0.9s ease-out;
+    }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased p-3 sm:p-6 min-h-screen">
+  <div class="max-w-2xl mx-auto bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
+
+    <!-- Top Bar: Title + Summary + View Tabs -->
+    <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[var(--border)]">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] flex items-center justify-center shadow-sm shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="5" width="20" height="14" rx="2" />
+            <line x1="2" y1="10" x2="22" y2="10" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-bold leading-tight text-[var(--foreground)]">語音刷卡記帳</h1>
+          <p class="text-xs text-[var(--muted-foreground)] mt-0.5">
+            今日 <span id="todayTotal" class="font-semibold text-[var(--foreground)] tabular-nums">NT$ 0</span> ・ 總計 <span id="grandTotal" class="font-semibold text-[var(--primary)] tabular-nums">NT$ 0</span> (<span id="totalCount">0</span>筆)
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1.5">
+        <button id="tabBtnEntry" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--primary)] text-[var(--primary-foreground)] transition cursor-pointer">
+          語音記帳
+        </button>
+        <button id="tabBtnList" type="button" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-85 transition cursor-pointer">
+          消費明細 (<span id="tabCountBadge">0</span>)
+        </button>
+        <button id="exportCsvBtn" type="button" title="預覽與匯出 CSV 對帳單" class="px-2.5 py-1.5 rounded-lg border border-[var(--border)] text-xs font-medium text-[var(--foreground)] hover:opacity-80 transition cursor-pointer">
+          匯出 CSV
+        </button>
+      </div>
+    </div>
+
+    <!-- Global Warning / Status Banner -->
+    <div id="statusBanner" class="hidden rounded-xl px-3.5 py-2.5 text-xs font-medium border border-amber-500/40 bg-amber-500/10 text-[var(--foreground)] flex items-start justify-between gap-2">
+      <span id="statusBannerText" class="leading-relaxed"></span>
+      <button id="statusBannerClose" type="button" class="text-xs underline opacity-75 hover:opacity-100 cursor-pointer shrink-0">關閉</button>
+    </div>
+
+    <!-- CSV Modal / Drawer -->
+    <div id="csvPreviewBox" class="hidden rounded-xl border border-[var(--border)] bg-[var(--background)] p-3 space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-semibold text-[var(--foreground)]">CSV 對帳單內容</span>
+        <div class="flex items-center gap-2">
+          <button id="copyCsvBtn" type="button" class="px-2.5 py-1 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] text-xs font-semibold cursor-pointer">
+            複製 CSV
+          </button>
+          <button id="closeCsvBtn" type="button" class="px-2 py-1 rounded-lg border border-[var(--border)] text-xs text-[var(--muted-foreground)] cursor-pointer">
+            收起
+          </button>
+        </div>
+      </div>
+      <textarea id="csvTextarea" readonly rows="4" class="w-full rounded-lg border border-[var(--border)] bg-[var(--card)] p-2 text-xs font-mono text-[var(--foreground)] focus:outline-none"></textarea>
+    </div>
+
+    <!-- TAB 1: Voice Capture + 4-Field Form -->
+    <div id="viewEntry" class="space-y-4">
+      <!-- Voice Input Bar -->
+      <div class="rounded-xl border border-[var(--border)] bg-[var(--background)] p-3.5 space-y-2.5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <div class="space-y-0.5">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold text-[var(--foreground)]">智慧整句語音輸入（支援真實麥克風持續聆聽）</span>
+              <span id="formStatusToast" class="text-xs px-2 py-0.5 rounded-md bg-[var(--primary)] text-[var(--primary-foreground)] font-semibold hidden">已帶入結果</span>
+            </div>
+            <p class="text-xs text-[var(--muted-foreground)]">
+              例：<span class="text-[var(--foreground)] font-medium">「今天在星巴克買拿鐵 155 元」</span>（開始說話後不會中途切斷，說完可點「完成辨識」或停頓 3 秒自動完成）
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0">
+            <button
+              id="demoVoiceBtn"
+              type="button"
+              class="px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--card)] hover:opacity-80 active:scale-95 text-xs font-semibold text-[var(--foreground)] transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-[var(--primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              模擬語音示範
+            </button>
+
+            <button
+              id="mainMicBtn"
+              type="button"
+              class="relative inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] font-semibold text-xs shadow-sm hover:opacity-95 active:scale-95 transition cursor-pointer"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" x2="12" y1="19" y2="22"/>
+              </svg>
+              <span id="mainMicLabel">點擊開始說話</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Transcript & Custom Sentence Test Box -->
+        <div id="voiceFeedbackBox" class="pt-2.5 border-t border-[var(--border)] space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <div id="waveContainer" class="hidden items-center gap-1 h-5 px-1 shrink-0">
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+              </div>
+              <p id="transcriptText" class="text-xs font-semibold text-[var(--foreground)]">
+                準備就緒：請點擊「點擊開始說話」對著麥克風說出消費內容
+              </p>
+            </div>
+            <label class="flex items-center gap-1 text-xs text-[var(--muted-foreground)] shrink-0 cursor-pointer select-none">
+              <input id="autoSaveToggle" type="checkbox" checked class="rounded border-[var(--border)] cursor-pointer" />
+              <span>辨識後自動存入明細</span>
+            </label>
+          </div>
+
+          <!-- Interactive Spoken Sentence Tester -->
+          <div class="flex items-center gap-1.5">
+            <input
+              id="customVoiceInput"
+              type="text"
+              placeholder="或直接輸入句子測試斷詞解析：例如「昨天在全聯買牛奶 185 元」"
+              class="flex-1 rounded-lg border border-[var(--border)] bg-[var(--card)] px-2.5 py-1.5 text-xs text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+            />
+            <button
+              id="runCustomVoiceBtn"
+              type="button"
+              class="px-2.5 py-1.5 rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)] text-xs font-semibold hover:opacity-85 active:scale-95 transition cursor-pointer shrink-0"
+            >
+              測試語音解析
+            </button>
+          </div>
+          <p id="parseHintText" class="text-xs text-[var(--muted-foreground)]"></p>
+        </div>
+      </div>
+
+      <!-- 4-Field Compact Form -->
+      <form id="expenseForm" class="space-y-3">
+        <input type="hidden" id="editingId" value="" />
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          <!-- 1. Date -->
+          <div>
+            <label for="dateInput" class="block text-xs font-medium text-[var(--muted-foreground)] mb-1">1. 日期</label>
+            <input
+              id="dateInput"
+              type="date"
+              required
+              class="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-2.5 py-1.5 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+            />
+          </div>
+
+          <!-- 2. Location -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label for="locationInput" class="text-xs font-medium text-[var(--muted-foreground)]">2. 消費地點</label>
+              <button type="button" data-field="location" class="field-mic-btn text-xs text-[var(--primary)] font-medium hover:underline cursor-pointer">🎤 語音</button>
+            </div>
+            <input
+              id="locationInput"
+              type="text"
+              required
+              placeholder="星巴克、全聯"
+              class="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-2.5 py-1.5 text-xs text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+            />
+          </div>
+
+          <!-- 3. Item -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label for="itemInput" class="text-xs font-medium text-[var(--muted-foreground)]">3. 消費項目</label>
+              <button type="button" data-field="item" class="field-mic-btn text-xs text-[var(--primary)] font-medium hover:underline cursor-pointer">🎤 語音</button>
+            </div>
+            <input
+              id="itemInput"
+              type="text"
+              required
+              placeholder="拿鐵、日用品"
+              class="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-2.5 py-1.5 text-xs text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+            />
+          </div>
+
+          <!-- 4. Amount -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label for="amountInput" class="text-xs font-medium text-[var(--muted-foreground)]">4. 金額 (NT$)</label>
+              <button type="button" data-field="amount" class="field-mic-btn text-xs text-[var(--primary)] font-medium hover:underline cursor-pointer">🎤 語音</button>
+            </div>
+            <input
+              id="amountInput"
+              type="number"
+              min="1"
+              step="1"
+              required
+              placeholder="185"
+              class="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-2.5 py-1.5 text-xs font-semibold tabular-nums text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+            />
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+          <div class="flex items-center gap-1 flex-wrap">
+            <span class="text-xs text-[var(--muted-foreground)]">快選地點：</span>
+            <button type="button" data-quick-loc="7-11" class="quick-loc-chip text-xs px-2 py-0.5 rounded-lg border border-[var(--border)] bg-[var(--background)] hover:opacity-80 active:scale-95 cursor-pointer">7-11</button>
+            <button type="button" data-quick-loc="全聯" class="quick-loc-chip text-xs px-2 py-0.5 rounded-lg border border-[var(--border)] bg-[var(--background)] hover:opacity-80 active:scale-95 cursor-pointer">全聯</button>
+            <button type="button" data-quick-loc="星巴克" class="quick-loc-chip text-xs px-2 py-0.5 rounded-lg border border-[var(--border)] bg-[var(--background)] hover:opacity-80 active:scale-95 cursor-pointer">星巴克</button>
+            <button type="button" data-quick-loc="好市多" class="quick-loc-chip text-xs px-2 py-0.5 rounded-lg border border-[var(--border)] bg-[var(--background)] hover:opacity-80 active:scale-95 cursor-pointer">好市多</button>
+            <button type="button" data-quick-loc="Uber Eats" class="quick-loc-chip text-xs px-2 py-0.5 rounded-lg border border-[var(--border)] bg-[var(--background)] hover:opacity-80 active:scale-95 cursor-pointer">Uber Eats</button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="cancelEditBtn" type="button" class="hidden px-3 py-1.5 rounded-xl border border-[var(--border)] text-xs font-medium text-[var(--muted-foreground)] cursor-pointer">
+              取消修改
+            </button>
+            <button id="submitBtn" type="submit" class="px-4 py-1.5 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] text-xs font-semibold shadow-sm hover:opacity-95 active:scale-95 transition cursor-pointer">
+              ＋ 新增刷卡紀錄
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Recent Records Preview inside Entry View -->
+      <div class="pt-2 border-t border-[var(--border)]">
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-xs font-semibold text-[var(--muted-foreground)]">最新刷卡紀錄（可直接點擊編輯或刪除）</span>
+          <button id="viewAllLink" type="button" class="text-xs text-[var(--primary)] font-medium hover:underline cursor-pointer">查看全部明細 →</button>
+        </div>
+        <div id="recentPreviewList" class="space-y-1.5"></div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Full Records Table & Filter -->
+    <div id="viewList" class="hidden space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <input id="filterDateInput" type="date" class="rounded-lg border border-[var(--border)] bg-[var(--background)] px-2.5 py-1 text-xs text-[var(--foreground)]" />
+          <button id="clearFilterBtn" type="button" class="hidden text-xs text-[var(--primary)] hover:underline cursor-pointer">全部日期</button>
+        </div>
+        <input id="searchInput" type="search" placeholder="搜尋商店或項目..." class="rounded-lg border border-[var(--border)] bg-[var(--background)] px-2.5 py-1 text-xs text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]" />
+      </div>
+
+      <div class="overflow-x-auto max-h-80 overflow-y-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-[var(--border)] text-xs text-[var(--muted-foreground)]">
+              <th class="py-2 px-2 font-medium">日期</th>
+              <th class="py-2 px-2 font-medium">消費地點</th>
+              <th class="py-2 px-2 font-medium">消費項目</th>
+              <th class="py-2 px-2 font-medium text-right">金額</th>
+              <th class="py-2 px-2 font-medium text-right">操作</th>
+            </tr>
+          </thead>
+          <tbody id="recordsTableBody" class="divide-y divide-[var(--border)] text-xs"></tbody>
+        </table>
+      </div>
+
+      <div id="emptyState" class="hidden py-6 text-center text-xs text-[var(--muted-foreground)]">
+        尚無符合的刷卡紀錄
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'cc_voice_records_v1';
+
+    function getTodayStr(offsetDays = 0) {
+      const d = new Date();
+      d.setDate(d.getDate() + offsetDays);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    const INITIAL_RECORDS = [
+      { id: 'rec-1', date: getTodayStr(0), location: '星巴克', item: '特大杯那堤與可頌', amount: 245 },
+      { id: 'rec-2', date: getTodayStr(0), location: '全聯福利中心', item: '鮮奶與家庭日用品', amount: 680 },
+      { id: 'rec-3', date: getTodayStr(-1), location: '台灣中油', item: '汽車加油 95 無鉛', amount: 1150 }
+    ];
+
+    let records = [];
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      records = saved ? JSON.parse(saved) : INITIAL_RECORDS;
+    } catch (e) {
+      records = [...INITIAL_RECORDS];
+    }
+
+    const tabBtnEntry = document.getElementById('tabBtnEntry');
+    const tabBtnList = document.getElementById('tabBtnList');
+    const viewEntry = document.getElementById('viewEntry');
+    const viewList = document.getElementById('viewList');
+    const viewAllLink = document.getElementById('viewAllLink');
+    const tabCountBadge = document.getElementById('tabCountBadge');
+    const recentPreviewList = document.getElementById('recentPreviewList');
+
+    const dateInput = document.getElementById('dateInput');
+    const locationInput = document.getElementById('locationInput');
+    const itemInput = document.getElementById('itemInput');
+    const amountInput = document.getElementById('amountInput');
+    const editingIdInput = document.getElementById('editingId');
+    const expenseForm = document.getElementById('expenseForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    const formStatusToast = document.getElementById('formStatusToast');
+
+    const statusBanner = document.getElementById('statusBanner');
+    const statusBannerText = document.getElementById('statusBannerText');
+    const statusBannerClose = document.getElementById('statusBannerClose');
+
+    const csvPreviewBox = document.getElementById('csvPreviewBox');
+    const csvTextarea = document.getElementById('csvTextarea');
+    const copyCsvBtn = document.getElementById('copyCsvBtn');
+    const closeCsvBtn = document.getElementById('closeCsvBtn');
+
+    const todayTotalEl = document.getElementById('todayTotal');
+    const grandTotalEl = document.getElementById('grandTotal');
+    const totalCountEl = document.getElementById('totalCount');
+    const recordsTableBody = document.getElementById('recordsTableBody');
+    const emptyState = document.getElementById('emptyState');
+
+    const filterDateInput = document.getElementById('filterDateInput');
+    const clearFilterBtn = document.getElementById('clearFilterBtn');
+    const searchInput = document.getElementById('searchInput');
+    const exportCsvBtn = document.getElementById('exportCsvBtn');
+
+    const mainMicBtn = document.getElementById('mainMicBtn');
+    const mainMicLabel = document.getElementById('mainMicLabel');
+    const demoVoiceBtn = document.getElementById('demoVoiceBtn');
+    const waveContainer = document.getElementById('waveContainer');
+    const transcriptText = document.getElementById('transcriptText');
+    const parseHintText = document.getElementById('parseHintText');
+    const autoSaveToggle = document.getElementById('autoSaveToggle');
+    const customVoiceInput = document.getElementById('customVoiceInput');
+    const runCustomVoiceBtn = document.getElementById('runCustomVoiceBtn');
+
+    dateInput.value = getTodayStr(0);
+
+    function flashElement(el) {
+      if (!el) return;
+      el.classList.remove('flash-highlight');
+      void el.offsetWidth;
+      el.classList.add('flash-highlight');
+    }
+
+    function showBanner(msg) {
+      statusBannerText.textContent = msg;
+      statusBanner.classList.remove('hidden');
+    }
+
+    statusBannerClose.addEventListener('click', () => {
+      statusBanner.classList.add('hidden');
+    });
+
+    let toastTimer = null;
+    function showToast(msg) {
+      formStatusToast.textContent = msg;
+      formStatusToast.classList.remove('hidden');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        formStatusToast.classList.add('hidden');
+      }, 3000);
+    }
+
+    function switchTab(tab) {
+      if (tab === 'entry') {
+        viewEntry.classList.remove('hidden');
+        viewList.classList.add('hidden');
+        tabBtnEntry.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--primary)] text-[var(--primary-foreground)] transition cursor-pointer';
+        tabBtnList.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-85 transition cursor-pointer';
+      } else {
+        viewEntry.classList.add('hidden');
+        viewList.classList.remove('hidden');
+        tabBtnList.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--primary)] text-[var(--primary-foreground)] transition cursor-pointer';
+        tabBtnEntry.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-85 transition cursor-pointer';
+      }
+    }
+
+    tabBtnEntry.addEventListener('click', () => switchTab('entry'));
+    tabBtnList.addEventListener('click', () => switchTab('list'));
+    viewAllLink.addEventListener('click', () => switchTab('list'));
+
+    function saveToStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+      } catch (e) {}
+    }
+
+    function parseChineseNumber(str) {
+      if (!str) return null;
+      const directMatch = str.replace(/,/g, '').match(/\d+/);
+      if (directMatch) return parseInt(directMatch[0], 10);
+      const map = { '零':0, '一':1, '二':2, '兩':2, '三':3, '四':4, '五':5, '六':6, '七':7, '八':8, '九':9 };
+      const units = { '十':10, '百':100, '千':1000, '萬':10000 };
+      let total = 0, current = 0, matched = false;
+      for (const ch of str) {
+        if (map[ch] !== undefined) { current = map[ch]; matched = true; }
+        else if (units[ch] !== undefined) {
+          matched = true;
+          if (current === 0) current = 1;
+          total += current * units[ch];
+          current = 0;
+        }
+      }
+      total += current;
+      return matched && total > 0 ? total : null;
+    }
+
+    function parseSpokenExpense(rawText) {
+      let text = rawText.trim().replace(/[。，、！？]/g, ' ');
+      const result = { date: getTodayStr(0), location: '', item: '', amount: null };
+
+      if (text.includes('前天')) {
+        result.date = getTodayStr(-2);
+        text = text.replace(/前天/g, ' ');
+      } else if (text.includes('昨天') || text.includes('昨日')) {
+        result.date = getTodayStr(-1);
+        text = text.replace(/昨天|昨日/g, ' ');
+      } else if (text.includes('今天') || text.includes('今日')) {
+        result.date = getTodayStr(0);
+        text = text.replace(/今天|今日/g, ' ');
+      } else {
+        const mdMatch = text.match(/(\d{1,2})\s*[月\/\-]\s*(\d{1,2})\s*[日號]?/);
+        if (mdMatch) {
+          const year = new Date().getFullYear();
+          result.date = `${year}-${String(mdMatch[1]).padStart(2, '0')}-${String(mdMatch[2]).padStart(2, '0')}`;
+          text = text.replace(mdMatch[0], ' ');
+        }
+      }
+
+      const allNumbers = [...text.matchAll(/(\d[\d,]*)\s*(?:元|塊錢|塊|台幣)?/g)];
+      if (allNumbers.length > 0) {
+        const lastMatch = allNumbers[allNumbers.length - 1];
+        result.amount = parseInt(lastMatch[1].replace(/,/g, ''), 10);
+        const idx = lastMatch.index;
+        text = text.slice(0, idx) + ' ' + text.slice(idx + lastMatch[0].length);
+      } else {
+        const cnAmount = parseChineseNumber(text);
+        if (cnAmount) result.amount = cnAmount;
+      }
+
+      text = text.replace(/花了|消費了|刷卡|刷了|一共|總共|台幣|塊錢|元整|塊|元/g, ' ').trim();
+
+      const patternA = /(?:在|去|到)\s*([^\s]+?)\s*(?:買了|買|吃了|吃|喝了|喝|點了|點|訂了|訂|刷了|加了|消費)\s*(.+)/;
+      const matchA = text.match(patternA);
+      if (matchA) {
+        result.location = matchA[1].trim();
+        result.item = matchA[2].trim();
+        return result;
+      }
+
+      const patternB = /^([^\s]+?)\s*(?:買了|買|吃了|吃|喝了|喝|點了|點|訂了|訂)\s*(.+)/;
+      const matchB = text.match(patternB);
+      if (matchB) {
+        result.location = matchB[1].trim();
+        result.item = matchB[2].trim();
+        return result;
+      }
+
+      const tokens = text.split(/\s+/).filter(Boolean);
+      if (tokens.length >= 2) {
+        result.location = tokens[0].replace(/^(在|去|到)/, '');
+        result.item = tokens.slice(1).join(' ');
+      } else if (tokens.length === 1) {
+        result.location = tokens[0].replace(/^(在|去|到)/, '');
+      }
+      return result;
+    }
+
+    function applyParsedExpense(rawSpeech) {
+      const parsed = parseSpokenExpense(rawSpeech);
+      if (parsed.date) { dateInput.value = parsed.date; flashElement(dateInput); }
+      if (parsed.location) { locationInput.value = parsed.location; flashElement(locationInput); }
+      if (parsed.item) { itemInput.value = parsed.item; flashElement(itemInput); }
+      if (parsed.amount !== null && !isNaN(parsed.amount)) { amountInput.value = parsed.amount; flashElement(amountInput); }
+
+      parseHintText.textContent = `解析結果 → 日期：${parsed.date} ｜ 地點：${parsed.location || '待補充'} ｜ 項目：${parsed.item || '待補充'} ｜ 金額：${parsed.amount ? 'NT$ ' + parsed.amount : '待補充'}`;
+
+      if (autoSaveToggle.checked && parsed.location && parsed.item && parsed.amount && !editingIdInput.value) {
+        saveFormRecord(true);
+        showToast('已語音辨識並自動新增紀錄！');
+      } else {
+        showToast('已帶入語音辨識欄位！');
+      }
+    }
+
+    // Separate Demo Voice Function (ONLY triggered when clicking the Demo button)
+    const DEMO_PHRASES = [
+      '今天在星巴克買冰拿鐵與可頌花了 235 元',
+      '今天在好市多買牛排與鮮奶一共 1680 元',
+      '昨天在全聯買家庭日用品 540 塊',
+      '今天在 Uber Eats 點健康餐盒 210 元'
+    ];
+    let demoIdx = 0;
+
+    function runDemoVoice() {
+      const phrase = DEMO_PHRASES[demoIdx % DEMO_PHRASES.length];
+      demoIdx++;
+      waveContainer.classList.remove('hidden');
+      waveContainer.classList.add('flex');
+      transcriptText.textContent = `模擬語音輸入中：「${phrase}」...`;
+      parseHintText.textContent = '正在示範語音自動拆解為 4 個欄位...';
+
+      setTimeout(() => {
+        waveContainer.classList.add('hidden');
+        waveContainer.classList.remove('flex');
+        transcriptText.textContent = `模擬辨識完成：「${phrase}」`;
+        applyParsedExpense(phrase);
+      }, 600);
+    }
+
+    demoVoiceBtn.addEventListener('click', runDemoVoice);
+
+    // Real Microphone Speech Recognition with continuous listening & silence detection
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+    let isListening = false;
+    let manualStopRequested = false;
+    let activeTargetField = 'full';
+    let finalBuffer = '';
+    let latestCombinedSpeech = '';
+    let silenceTimer = null;
+
+    function clearSilenceTimer() {
+      if (silenceTimer) {
+        clearTimeout(silenceTimer);
+        silenceTimer = null;
+      }
+    }
+
+    function updateMicUiListening(listening) {
+      if (listening) {
+        waveContainer.classList.remove('hidden');
+        waveContainer.classList.add('flex');
+        mainMicBtn.classList.add('recording-ring', 'bg-red-600');
+        mainMicLabel.textContent = '⏹ 說完了，點擊完成';
+      } else {
+        waveContainer.classList.add('hidden');
+        waveContainer.classList.remove('flex');
+        mainMicBtn.classList.remove('recording-ring', 'bg-red-600');
+        mainMicLabel.textContent = '點擊開始說話';
+      }
+    }
+
+    function finalizeSpeechSession() {
+      clearSilenceTimer();
+      manualStopRequested = true;
+      isListening = false;
+      try { if (recognition) recognition.stop(); } catch (e) {}
+      updateMicUiListening(false);
+
+      const spoken = latestCombinedSpeech.trim();
+      if (!spoken) {
+        transcriptText.textContent = '尚未偵測到語音內容，請再點一次「點擊開始說話」重試。';
+        return;
+      }
+
+      transcriptText.textContent = `辨識完成：「${spoken}」`;
+      if (activeTargetField === 'full') {
+        applyParsedExpense(spoken);
+      } else if (activeTargetField === 'location') {
+        locationInput.value = spoken.replace(/[。，、]/g, '').trim();
+        flashElement(locationInput);
+        showToast(`已填入消費地點：${locationInput.value}`);
+      } else if (activeTargetField === 'item') {
+        itemInput.value = spoken.replace(/[。，、]/g, '').trim();
+        flashElement(itemInput);
+        showToast(`已填入消費項目：${itemInput.value}`);
+      } else if (activeTargetField === 'amount') {
+        const num = parseChineseNumber(spoken);
+        if (num) {
+          amountInput.value = num;
+          flashElement(amountInput);
+          showToast(`已填入金額：NT$ ${num}`);
+        }
+      }
+    }
+
+    if (SpeechRecognition) {
+      try {
+        recognition = new SpeechRecognition();
+        recognition.lang = 'zh-TW';
+        recognition.interimResults = true;
+        recognition.continuous = true;
+
+        recognition.onstart = () => {
+          isListening = true;
+          statusBanner.classList.add('hidden');
+          updateMicUiListening(true);
+          if (!latestCombinedSpeech) {
+            if (activeTargetField === 'full') {
+              transcriptText.textContent = '🎙️ 麥克風持續聆聽中... 請開始說話（說完可點「說完了」或停頓 3 秒自動完成）';
+            } else {
+              const names = { location: '消費地點', item: '消費項目', amount: '金額' };
+              transcriptText.textContent = `🎙️ 正在聆聽【${names[activeTargetField]}】... 請開始說話`;
+            }
+          }
+        };
+
+        recognition.onresult = (event) => {
+          let interim = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const txt = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalBuffer += txt;
+            } else {
+              interim += txt;
+            }
+          }
+          latestCombinedSpeech = (finalBuffer + interim).trim();
+          if (latestCombinedSpeech) {
+            transcriptText.textContent = `🎙️ 正在聽您說：「${latestCombinedSpeech}」...`;
+            parseHintText.textContent = '繼續說話，或停頓 3 秒自動完成（也可直接點右上紅鈕完成）';
+
+            // Only start the 3-second auto-finish timer AFTER the user has actually spoken!
+            clearSilenceTimer();
+            silenceTimer = setTimeout(() => {
+              if (isListening && latestCombinedSpeech.trim().length > 0) {
+                finalizeSpeechSession();
+              }
+            }, 3000);
+          }
+        };
+
+        recognition.onerror = (event) => {
+          const err = event && event.error ? event.error : '';
+          if (err === 'no-speech') {
+            // Do NOT cut off if the user hasn't started speaking yet!
+            return;
+          }
+          if (err === 'not-allowed' || err === 'service-not-allowed') {
+            clearSilenceTimer();
+            manualStopRequested = true;
+            isListening = false;
+            updateMicUiListening(false);
+            transcriptText.textContent = '⚠️ 無法啟動實體麥克風（權限被瀏覽器或預覽視窗攔截）';
+            showBanner('⚠️ 目前視窗無法取得麥克風權限。若您正在對話預覽框中，因安全沙盒限制無法開啟實體麥克風，請使用獨立瀏覽器分頁開啟此網頁並允許麥克風權限，或點擊「模擬語音示範」測試。');
+          }
+        };
+
+        recognition.onend = () => {
+          // If the user hasn't clicked stop and hasn't finished speaking, keep the mic alive!
+          if (isListening && !manualStopRequested) {
+            try {
+              recognition.start();
+              return;
+            } catch (e) {}
+          }
+          isListening = false;
+          updateMicUiListening(false);
+        };
+      } catch (e) {
+        recognition = null;
+      }
+    }
+
+    function startRealVoiceCapture(targetField) {
+      if (!recognition) {
+        showBanner('⚠️ 您的瀏覽器不支援 Web Speech API 語音辨識（建議使用 Chrome、Edge 或 Safari 開啟），或點選「模擬語音示範」體驗。');
+        return;
+      }
+      if (isListening) {
+        finalizeSpeechSession();
+        return;
+      }
+      activeTargetField = targetField;
+      finalBuffer = '';
+      latestCombinedSpeech = '';
+      manualStopRequested = false;
+      clearSilenceTimer();
+      parseHintText.textContent = '';
+      try {
+        recognition.start();
+      } catch (e) {
+        try {
+          recognition.stop();
+        } catch (err) {}
+      }
+    }
+
+    mainMicBtn.addEventListener('click', () => {
+      startRealVoiceCapture('full');
+    });
+
+    document.querySelectorAll('.field-mic-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const field = btn.getAttribute('data-field');
+        startRealVoiceCapture(field);
+      });
+    });
+
+    runCustomVoiceBtn.addEventListener('click', () => {
+      const customTxt = customVoiceInput.value.trim();
+      if (!customTxt) {
+        const sample = '昨天在全聯買鮮奶與雞蛋 265 元';
+        customVoiceInput.value = sample;
+        transcriptText.textContent = `測試口述：「${sample}」`;
+        applyParsedExpense(sample);
+        return;
+      }
+      transcriptText.textContent = `測試口述：「${customTxt}」`;
+      applyParsedExpense(customTxt);
+    });
+
+    customVoiceInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        runCustomVoiceBtn.click();
+      }
+    });
+
+    document.querySelectorAll('.quick-loc-chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        locationInput.value = chip.getAttribute('data-quick-loc');
+        flashElement(locationInput);
+        itemInput.focus();
+        showToast(`已選擇地點：${locationInput.value}`);
+      });
+    });
+
+    function saveFormRecord(keepValuesBriefly = false) {
+      const date = dateInput.value || getTodayStr(0);
+      const location = locationInput.value.trim();
+      const item = itemInput.value.trim();
+      const amount = parseInt(amountInput.value, 10);
+      if (!location || !item || isNaN(amount) || amount <= 0) {
+        showBanner('請填寫完整的「消費地點、消費項目、金額」後再存入。');
+        return;
+      }
+
+      const editingId = editingIdInput.value;
+      if (editingId) {
+        records = records.map((r) => r.id === editingId ? { ...r, date, location, item, amount } : r);
+        resetEditMode();
+        showToast('已更新刷卡紀錄！');
+      } else {
+        records.unshift({ id: 'rec-' + Date.now(), date, location, item, amount });
+        showToast('已新增刷卡紀錄！');
+      }
+      saveToStorage();
+      renderRecords();
+
+      if (!keepValuesBriefly) {
+        locationInput.value = '';
+        itemInput.value = '';
+        amountInput.value = '';
+      }
+    }
+
+    expenseForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      saveFormRecord(false);
+    });
+
+    function startEditRecord(id) {
+      const target = records.find((r) => r.id === id);
+      if (!target) return;
+      switchTab('entry');
+      editingIdInput.value = target.id;
+      dateInput.value = target.date;
+      locationInput.value = target.location;
+      itemInput.value = target.item;
+      amountInput.value = target.amount;
+      flashElement(dateInput);
+      flashElement(locationInput);
+      flashElement(itemInput);
+      flashElement(amountInput);
+      submitBtn.textContent = '儲存修改';
+      cancelEditBtn.classList.remove('hidden');
+      showToast(`正在編輯：${target.location} (${formatCurrency(target.amount)})`);
+    }
+
+    function resetEditMode() {
+      editingIdInput.value = '';
+      submitBtn.textContent = '＋ 新增刷卡紀錄';
+      cancelEditBtn.classList.add('hidden');
+    }
+
+    cancelEditBtn.addEventListener('click', () => {
+      resetEditMode();
+      locationInput.value = '';
+      itemInput.value = '';
+      amountInput.value = '';
+      showToast('已取消編輯');
+    });
+
+    function deleteRecord(id) {
+      const target = records.find((r) => r.id === id);
+      records = records.filter((r) => r.id !== id);
+      if (editingIdInput.value === id) resetEditMode();
+      saveToStorage();
+      renderRecords();
+      if (target) showToast(`已刪除：${target.location} ${formatCurrency(target.amount)}`);
+    }
+
+    function formatCurrency(num) {
+      return 'NT$ ' + Number(num || 0).toLocaleString('zh-TW');
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function renderRecords() {
+      const todayStr = getTodayStr(0);
+      const todaySum = records.filter((r) => r.date === todayStr).reduce((acc, r) => acc + Number(r.amount || 0), 0);
+      const totalSum = records.reduce((acc, r) => acc + Number(r.amount || 0), 0);
+
+      todayTotalEl.textContent = formatCurrency(todaySum);
+      grandTotalEl.textContent = formatCurrency(totalSum);
+      totalCountEl.textContent = records.length;
+      tabCountBadge.textContent = records.length;
+
+      recentPreviewList.innerHTML = '';
+      records.slice(0, 3).forEach((rec) => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between text-xs py-1.5 px-2.5 rounded-lg bg-[var(--background)] border border-[var(--border)]';
+        row.innerHTML = `
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-[var(--muted-foreground)] tabular-nums shrink-0">${rec.date.slice(5)}</span>
+            <span class="font-semibold text-[var(--foreground)] shrink-0">${escapeHtml(rec.location)}</span>
+            <span class="text-[var(--muted-foreground)] truncate">${escapeHtml(rec.item)}</span>
+          </div>
+          <div class="flex items-center gap-2 shrink-0 ml-2">
+            <span class="font-bold tabular-nums text-[var(--foreground)]">${formatCurrency(rec.amount)}</span>
+            <button type="button" data-edit="${rec.id}" class="text-[var(--primary)] hover:underline cursor-pointer">編輯</button>
+            <button type="button" data-del="${rec.id}" class="text-red-500 hover:underline cursor-pointer">刪除</button>
+          </div>
+        `;
+        recentPreviewList.appendChild(row);
+      });
+
+      recentPreviewList.querySelectorAll('[data-edit]').forEach((btn) => {
+        btn.addEventListener('click', () => startEditRecord(btn.getAttribute('data-edit')));
+      });
+      recentPreviewList.querySelectorAll('[data-del]').forEach((btn) => {
+        btn.addEventListener('click', () => deleteRecord(btn.getAttribute('data-del')));
+      });
+
+      const filterDate = filterDateInput.value;
+      const query = searchInput.value.trim().toLowerCase();
+      clearFilterBtn.classList.toggle('hidden', !filterDate);
+
+      const filtered = records
+        .filter((r) => (!filterDate || r.date === filterDate))
+        .filter((r) => !query || r.location.toLowerCase().includes(query) || r.item.toLowerCase().includes(query) || String(r.amount).includes(query))
+        .sort((a, b) => b.date.localeCompare(a.date));
+
+      recordsTableBody.innerHTML = '';
+      if (filtered.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      emptyState.classList.add('hidden');
+
+      filtered.forEach((rec) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="py-2 px-2 whitespace-nowrap tabular-nums text-[var(--muted-foreground)]">${rec.date}</td>
+          <td class="py-2 px-2 font-semibold text-[var(--foreground)]">${escapeHtml(rec.location)}</td>
+          <td class="py-2 px-2 text-[var(--foreground)]">${escapeHtml(rec.item)}</td>
+          <td class="py-2 px-2 text-right font-semibold tabular-nums text-[var(--foreground)]">${formatCurrency(rec.amount)}</td>
+          <td class="py-2 px-2 text-right whitespace-nowrap">
+            <button type="button" data-edit="${rec.id}" class="text-[var(--primary)] hover:underline mr-2 cursor-pointer">編輯</button>
+            <button type="button" data-del="${rec.id}" class="text-red-500 hover:underline cursor-pointer">刪除</button>
+          </td>
+        `;
+        recordsTableBody.appendChild(tr);
+      });
+
+      recordsTableBody.querySelectorAll('[data-edit]').forEach((btn) => {
+        btn.addEventListener('click', () => startEditRecord(btn.getAttribute('data-edit')));
+      });
+      recordsTableBody.querySelectorAll('[data-del]').forEach((btn) => {
+        btn.addEventListener('click', () => deleteRecord(btn.getAttribute('data-del')));
+      });
+    }
+
+    filterDateInput.addEventListener('change', renderRecords);
+    clearFilterBtn.addEventListener('click', () => { filterDateInput.value = ''; renderRecords(); });
+    searchInput.addEventListener('input', renderRecords);
+
+    function buildCsvString() {
+      const headers = ['日期', '消費地點', '消費項目', '金額'];
+      const rows = records.map((r) => [r.date, `"${r.location.replace(/"/g, '""')}"`, `"${r.item.replace(/"/g, '""')}"`, r.amount]);
+      return [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+    }
+
+    exportCsvBtn.addEventListener('click', () => {
+      if (records.length === 0) {
+        showBanner('目前尚無刷卡紀錄可匯出。');
+        return;
+      }
+      const csvStr = buildCsvString();
+      csvTextarea.value = csvStr;
+      csvPreviewBox.classList.remove('hidden');
+
+      try {
+        const blob = new Blob(['\uFEFF' + csvStr], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `信用卡消費明細_${getTodayStr(0)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (e) {}
+    });
+
+    copyCsvBtn.addEventListener('click', () => {
+      csvTextarea.select();
+      try {
+        navigator.clipboard.writeText(csvTextarea.value);
+      } catch (e) {
+        document.execCommand('copy');
+      }
+      copyCsvBtn.textContent = '✓ 已複製！';
+      setTimeout(() => { copyCsvBtn.textContent = '複製 CSV'; }, 2000);
+    });
+
+    closeCsvBtn.addEventListener('click', () => {
+      csvPreviewBox.classList.add('hidden');
+    });
+
+    renderRecords();
+  </script>
+</body>
+</html>
