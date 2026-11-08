@@ -37,6 +37,7 @@
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
   <style>
     :root {
+      color-scheme: light;
       --background: #f8fafc;
       --card: #ffffff;
       --foreground: #0f172a;
@@ -47,40 +48,42 @@
       --secondary: #f1f5f9;
       --secondary-foreground: #1e293b;
     }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --background: #0f172a;
-        --card: #1e293b;
-        --foreground: #f8fafc;
-        --muted-foreground: #94a3b8;
-        --border: #334155;
-        --primary: #3b82f6;
-        --primary-foreground: #ffffff;
-        --secondary: #334155;
-        --secondary-foreground: #f1f5f9;
-      }
-    }
     @keyframes pulse-ring {
       0% { transform: scale(0.95); opacity: 0.85; }
-      70% { transform: scale(1.25); opacity: 0; }
-      100% { transform: scale(1.25); opacity: 0; }
+      70% { transform: scale(1.28); opacity: 0; }
+      100% { transform: scale(1.28); opacity: 0; }
+    }
+    @keyframes pulse-ring-outer {
+      0% { transform: scale(1); opacity: 0.5; }
+      70% { transform: scale(1.45); opacity: 0; }
+      100% { transform: scale(1.45); opacity: 0; }
     }
     @keyframes wave {
       0%, 100% { height: 5px; }
       50% { height: 18px; }
     }
     @keyframes field-flash {
-      0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.55); }
-      50% { box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.35); }
-      100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+      0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.55); }
+      50% { box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.35); }
+      100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
     }
     .recording-ring::before {
       content: '';
       position: absolute;
-      inset: -5px;
+      inset: -8px;
       border-radius: 9999px;
-      border: 2px solid #ef4444;
+      border: 3px solid #ef4444;
       animation: pulse-ring 1.2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+      pointer-events: none;
+    }
+    .recording-ring::after {
+      content: '';
+      position: absolute;
+      inset: -16px;
+      border-radius: 9999px;
+      border: 2px solid rgba(239, 68, 68, 0.45);
+      animation: pulse-ring-outer 1.2s cubic-bezier(0.215, 0.61, 0.355, 1) 0.2s infinite;
+      pointer-events: none;
     }
     .wave-bar {
       width: 3px;
@@ -130,7 +133,7 @@
     </div>
 
     <!-- Global Warning / Status Banner -->
-    <div id="statusBanner" class="hidden rounded-xl px-3.5 py-2.5 text-xs font-medium border border-amber-500/40 bg-amber-500/10 text-[var(--foreground)] flex items-start justify-between gap-2">
+    <div id="statusBanner" class="hidden rounded-xl px-3.5 py-2.5 text-xs font-medium border border-amber-500/40 bg-amber-50 text-[var(--foreground)] flex items-start justify-between gap-2">
       <span id="statusBannerText" class="leading-relaxed"></span>
       <button id="statusBannerClose" type="button" class="text-xs underline opacity-75 hover:opacity-100 cursor-pointer shrink-0">關閉</button>
     </div>
@@ -153,48 +156,50 @@
 
     <!-- TAB 1: Voice Capture + 4-Field Form -->
     <div id="viewEntry" class="space-y-4">
-      <!-- Voice Input Bar -->
-      <div class="rounded-xl border border-[var(--border)] bg-[var(--background)] p-3.5 space-y-2.5">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+      <!-- Voice Input Card with Large Circular Button -->
+      <div class="rounded-2xl border border-[var(--border)] bg-gradient-to-b from-blue-50/70 to-[var(--background)] p-4 sm:p-5 space-y-3.5">
+        <div class="flex items-start justify-between gap-2">
           <div class="space-y-0.5">
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-semibold text-[var(--foreground)]">智慧整句語音輸入（支援真實麥克風持續聆聽）</span>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xs sm:text-sm font-bold text-[var(--foreground)]">智慧整句語音輸入</span>
               <span id="formStatusToast" class="text-xs px-2 py-0.5 rounded-md bg-[var(--primary)] text-[var(--primary-foreground)] font-semibold hidden">已帶入結果</span>
             </div>
             <p class="text-xs text-[var(--muted-foreground)]">
-              例：<span class="text-[var(--foreground)] font-medium">「今天在星巴克買拿鐵 155 元」</span>（開始說話後不會中途切斷，說完可點「完成辨識」或停頓 3 秒自動完成）
+              例：<span class="text-[var(--foreground)] font-medium">「今天在星巴克買拿鐵 155 元」</span>（說完可再次點擊圓鈕完成，或停頓 3 秒自動完成）
             </p>
           </div>
 
-          <div class="flex items-center gap-2 shrink-0">
-            <button
-              id="demoVoiceBtn"
-              type="button"
-              class="px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--card)] hover:opacity-80 active:scale-95 text-xs font-semibold text-[var(--foreground)] transition flex items-center gap-1.5 cursor-pointer shadow-sm"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-[var(--primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polygon points="5 3 19 12 5 21 5 3"></polygon>
-              </svg>
-              模擬語音示範
-            </button>
+          <button
+            id="demoVoiceBtn"
+            type="button"
+            class="px-3 py-1.5 rounded-full border border-[var(--border)] bg-[var(--card)] hover:bg-slate-50 active:scale-95 text-xs font-semibold text-[var(--foreground)] transition flex items-center gap-1.5 cursor-pointer shadow-sm shrink-0"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-[var(--primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            模擬語音示範
+          </button>
+        </div>
 
-            <button
-              id="mainMicBtn"
-              type="button"
-              class="relative inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] font-semibold text-xs shadow-sm hover:opacity-95 active:scale-95 transition cursor-pointer"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                <line x1="12" x2="12" y1="19" y2="22"/>
-              </svg>
-              <span id="mainMicLabel">點擊開始說話</span>
-            </button>
-          </div>
+        <!-- Large Circular Microphone Button Centerpiece -->
+        <div class="flex flex-col items-center justify-center py-2">
+          <button
+            id="mainMicBtn"
+            type="button"
+            aria-label="語音輸入按鈕"
+            class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[var(--primary)] text-[var(--primary-foreground)] shadow-lg shadow-blue-600/25 hover:bg-blue-700 active:scale-95 transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer select-none ring-4 ring-blue-100"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-9 h-9 sm:w-10 sm:h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" x2="12" y1="19" y2="22"/>
+            </svg>
+            <span id="mainMicLabel" class="text-xs sm:text-sm font-bold tracking-tight">點擊說話</span>
+          </button>
         </div>
 
         <!-- Live Transcript & Custom Sentence Test Box -->
-        <div id="voiceFeedbackBox" class="pt-2.5 border-t border-[var(--border)] space-y-2">
+        <div id="voiceFeedbackBox" class="pt-3 border-t border-[var(--border)] space-y-2">
           <div class="flex items-center justify-between gap-2">
             <div class="flex items-center gap-2 min-w-0">
               <div id="waveContainer" class="hidden items-center gap-1 h-5 px-1 shrink-0">
@@ -204,7 +209,7 @@
                 <div class="wave-bar"></div>
               </div>
               <p id="transcriptText" class="text-xs font-semibold text-[var(--foreground)]">
-                準備就緒：請點擊「點擊開始說話」對著麥克風說出消費內容
+                準備就緒：請點擊上方藍色大圓鈕，對著麥克風說出消費內容
               </p>
             </div>
             <label class="flex items-center gap-1 text-xs text-[var(--muted-foreground)] shrink-0 cursor-pointer select-none">
@@ -239,7 +244,9 @@
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           <!-- 1. Date -->
           <div>
-            <label for="dateInput" class="block text-xs font-medium text-[var(--muted-foreground)] mb-1">1. 日期</label>
+            <div class="flex items-center justify-between mb-1 min-h-[28px]">
+              <label for="dateInput" class="block text-xs font-medium text-[var(--muted-foreground)]">1. 日期</label>
+            </div>
             <input
               id="dateInput"
               type="date"
@@ -250,9 +257,15 @@
 
           <!-- 2. Location -->
           <div>
-            <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center justify-between mb-1 min-h-[28px]">
               <label for="locationInput" class="text-xs font-medium text-[var(--muted-foreground)]">2. 消費地點</label>
-              <button type="button" data-field="location" class="field-mic-btn text-xs text-[var(--primary)] font-medium hover:underline cursor-pointer">🎤 語音</button>
+              <button type="button" data-field="location" title="語音輸入消費地點" class="field-mic-btn w-7 h-7 rounded-full bg-blue-50 text-[var(--primary)] border border-blue-200 hover:bg-[var(--primary)] hover:text-white active:scale-95 transition flex items-center justify-center cursor-pointer shadow-xs">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                  <line x1="12" x2="12" y1="19" y2="22"/>
+                </svg>
+              </button>
             </div>
             <input
               id="locationInput"
@@ -265,9 +278,15 @@
 
           <!-- 3. Item -->
           <div>
-            <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center justify-between mb-1 min-h-[28px]">
               <label for="itemInput" class="text-xs font-medium text-[var(--muted-foreground)]">3. 消費項目</label>
-              <button type="button" data-field="item" class="field-mic-btn text-xs text-[var(--primary)] font-medium hover:underline cursor-pointer">🎤 語音</button>
+              <button type="button" data-field="item" title="語音輸入消費項目" class="field-mic-btn w-7 h-7 rounded-full bg-blue-50 text-[var(--primary)] border border-blue-200 hover:bg-[var(--primary)] hover:text-white active:scale-95 transition flex items-center justify-center cursor-pointer shadow-xs">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                  <line x1="12" x2="12" y1="19" y2="22"/>
+                </svg>
+              </button>
             </div>
             <input
               id="itemInput"
@@ -280,9 +299,15 @@
 
           <!-- 4. Amount -->
           <div>
-            <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center justify-between mb-1 min-h-[28px]">
               <label for="amountInput" class="text-xs font-medium text-[var(--muted-foreground)]">4. 金額 (NT$)</label>
-              <button type="button" data-field="amount" class="field-mic-btn text-xs text-[var(--primary)] font-medium hover:underline cursor-pointer">🎤 語音</button>
+              <button type="button" data-field="amount" title="語音輸入金額" class="field-mic-btn w-7 h-7 rounded-full bg-blue-50 text-[var(--primary)] border border-blue-200 hover:bg-[var(--primary)] hover:text-white active:scale-95 transition flex items-center justify-center cursor-pointer shadow-xs">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                  <line x1="12" x2="12" y1="19" y2="22"/>
+                </svg>
+              </button>
             </div>
             <input
               id="amountInput"
@@ -631,13 +656,15 @@
       if (listening) {
         waveContainer.classList.remove('hidden');
         waveContainer.classList.add('flex');
-        mainMicBtn.classList.add('recording-ring', 'bg-red-600');
-        mainMicLabel.textContent = '⏹ 說完了，點擊完成';
+        mainMicBtn.classList.remove('bg-[var(--primary)]', 'hover:bg-blue-700', 'ring-blue-100', 'shadow-blue-600/25');
+        mainMicBtn.classList.add('recording-ring', 'bg-red-600', 'hover:bg-red-700', 'ring-red-100', 'shadow-red-600/25');
+        mainMicLabel.textContent = '點擊完成';
       } else {
         waveContainer.classList.add('hidden');
         waveContainer.classList.remove('flex');
-        mainMicBtn.classList.remove('recording-ring', 'bg-red-600');
-        mainMicLabel.textContent = '點擊開始說話';
+        mainMicBtn.classList.remove('recording-ring', 'bg-red-600', 'hover:bg-red-700', 'ring-red-100', 'shadow-red-600/25');
+        mainMicBtn.classList.add('bg-[var(--primary)]', 'hover:bg-blue-700', 'ring-blue-100', 'shadow-blue-600/25');
+        mainMicLabel.textContent = '點擊說話';
       }
     }
 
@@ -650,7 +677,7 @@
 
       const spoken = latestCombinedSpeech.trim();
       if (!spoken) {
-        transcriptText.textContent = '尚未偵測到語音內容，請再點一次「點擊開始說話」重試。';
+        transcriptText.textContent = '尚未偵測到語音內容，請再點一次上方「點擊說話」圓鈕重試。';
         return;
       }
 
@@ -688,7 +715,7 @@
           updateMicUiListening(true);
           if (!latestCombinedSpeech) {
             if (activeTargetField === 'full') {
-              transcriptText.textContent = '🎙️ 麥克風持續聆聽中... 請開始說話（說完可點「說完了」或停頓 3 秒自動完成）';
+              transcriptText.textContent = '🎙️ 麥克風持續聆聽中... 請開始說話（說完可點紅色大圓鈕或停頓 3 秒自動完成）';
             } else {
               const names = { location: '消費地點', item: '消費項目', amount: '金額' };
               transcriptText.textContent = `🎙️ 正在聆聽【${names[activeTargetField]}】... 請開始說話`;
@@ -709,7 +736,7 @@
           latestCombinedSpeech = (finalBuffer + interim).trim();
           if (latestCombinedSpeech) {
             transcriptText.textContent = `🎙️ 正在聽您說：「${latestCombinedSpeech}」...`;
-            parseHintText.textContent = '繼續說話，或停頓 3 秒自動完成（也可直接點右上紅鈕完成）';
+            parseHintText.textContent = '繼續說話，或停頓 3 秒自動完成（也可直接點紅色大圓鈕完成）';
 
             // Only start the 3-second auto-finish timer AFTER the user has actually spoken!
             clearSilenceTimer();
