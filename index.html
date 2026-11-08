@@ -501,6 +501,50 @@
       </div>
 
     </div>
+
+    <!-- Floating Undo Delete Toast Bar -->
+    <div id="undoDeleteBar" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-1.5rem)] max-w-md rounded-2xl bg-[#1C1917] text-white px-4 py-3 shadow-xl flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="inline-block w-2 h-2 rounded-full bg-[#F43F5E] shrink-0"></span>
+        <span id="undoDeleteText" class="text-xs font-medium truncate">已刪除刷卡紀錄</span>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <button id="undoDeleteBtn" type="button" class="px-3 py-1.5 rounded-xl bg-[#0F766E] hover:bg-[#14867D] text-white text-xs font-bold cursor-pointer transition active:scale-95">
+          ↩ 復原刪除
+        </button>
+        <button id="dismissUndoBtn" type="button" class="text-xs text-[#A8A29E] hover:text-white px-1 cursor-pointer">
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteConfirmModal" class="hidden fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-[2px] flex items-center justify-center p-4">
+      <div class="w-full max-w-sm rounded-3xl bg-white border border-[#E6E1D8] p-5 shadow-2xl space-y-4">
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-[#FFF1F2] text-[#E11D48] border border-rose-200 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </div>
+          <div class="space-y-1">
+            <h2 class="text-base font-bold text-[#1C1917]">確認要刪除這筆紀錄嗎？</h2>
+            <p class="text-xs text-[#57534E]">為避免誤觸，請確認以下消費明細是否要移除：</p>
+          </div>
+        </div>
+
+        <div id="deleteModalPreview" class="rounded-2xl bg-[#FAF8F4] border border-[#E6E1D8] p-3.5 space-y-1"></div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-1">
+          <button id="cancelDeleteModalBtn" type="button" class="flex-1 py-2.5 px-4 rounded-2xl border border-[#D5CFC4] bg-white hover:bg-[#FAF8F4] text-xs sm:text-sm font-semibold text-[#57534E] transition cursor-pointer">
+            保留紀錄
+          </button>
+          <button id="confirmDeleteModalBtn" type="button" class="flex-1 py-2.5 px-4 rounded-2xl bg-[#E11D48] hover:bg-[#BE123C] text-white text-xs sm:text-sm font-semibold shadow-sm transition active:scale-95 cursor-pointer">
+            確認刪除
+          </button>
+        </div>
+      </div>
+    </div>
   </main>
 
   <script>
@@ -1023,14 +1067,97 @@
       showToast('已取消編輯');
     });
 
+    const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+    const deleteModalPreview = document.getElementById('deleteModalPreview');
+    const cancelDeleteModalBtn = document.getElementById('cancelDeleteModalBtn');
+    const confirmDeleteModalBtn = document.getElementById('confirmDeleteModalBtn');
+
+    const undoDeleteBar = document.getElementById('undoDeleteBar');
+    const undoDeleteText = document.getElementById('undoDeleteText');
+    const undoDeleteBtn = document.getElementById('undoDeleteBtn');
+    const dismissUndoBtn = document.getElementById('dismissUndoBtn');
+
+    let pendingDeleteId = null;
+    let lastDeletedBackup = null;
+    let undoTimer = null;
+
     function deleteRecord(id) {
       const target = records.find((r) => r.id === id);
-      records = records.filter((r) => r.id !== id);
-      if (editingIdInput.value === id) resetEditMode();
+      if (!target) return;
+      pendingDeleteId = id;
+      deleteModalPreview.innerHTML = `
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-sm font-bold text-[#1C1917]">${escapeHtml(target.location)}</span>
+          <span class="font-num text-sm font-bold text-[#E11D48]">${formatCurrency(target.amount)}</span>
+        </div>
+        <div class="flex items-center justify-between gap-2 text-xs text-[#57534E]">
+          <span class="truncate">${escapeHtml(target.item)}</span>
+          <span class="font-num text-[#8A847C] shrink-0">${target.date}</span>
+        </div>
+      `;
+      deleteConfirmModal.classList.remove('hidden');
+    }
+
+    function closeDeleteModal() {
+      pendingDeleteId = null;
+      deleteConfirmModal.classList.add('hidden');
+    }
+
+    function executeConfirmedDelete() {
+      if (!pendingDeleteId) return;
+      const idx = records.findIndex((r) => r.id === pendingDeleteId);
+      if (idx === -1) {
+        closeDeleteModal();
+        return;
+      }
+      const target = records[idx];
+      lastDeletedBackup = { record: { ...target }, index: idx };
+
+      records = records.filter((r) => r.id !== pendingDeleteId);
+      if (editingIdInput.value === pendingDeleteId) resetEditMode();
+      closeDeleteModal();
       saveToStorage();
       renderRecords();
-      if (target) showToast(`已刪除：${target.location} ${formatCurrency(target.amount)}`);
+
+      // Show Undo Bar for 10 seconds
+      undoDeleteText.textContent = `已刪除：${target.location} (${formatCurrency(target.amount)})`;
+      undoDeleteBar.classList.remove('hidden');
+      if (undoTimer) clearTimeout(undoTimer);
+      undoTimer = setTimeout(() => {
+        undoDeleteBar.classList.add('hidden');
+      }, 10000);
     }
+
+    cancelDeleteModalBtn.addEventListener('click', closeDeleteModal);
+    confirmDeleteModalBtn.addEventListener('click', executeConfirmedDelete);
+
+    deleteConfirmModal.addEventListener('click', (e) => {
+      if (e.target === deleteConfirmModal) closeDeleteModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !deleteConfirmModal.classList.contains('hidden')) {
+        closeDeleteModal();
+      }
+    });
+
+    undoDeleteBtn.addEventListener('click', () => {
+      if (!lastDeletedBackup) return;
+      const { record, index } = lastDeletedBackup;
+      const insertAt = Math.min(Math.max(0, index), records.length);
+      records.splice(insertAt, 0, record);
+      lastDeletedBackup = null;
+      if (undoTimer) clearTimeout(undoTimer);
+      undoDeleteBar.classList.add('hidden');
+      saveToStorage();
+      renderRecords();
+      showToast(`已復原：${record.location} ${formatCurrency(record.amount)}`);
+    });
+
+    dismissUndoBtn.addEventListener('click', () => {
+      if (undoTimer) clearTimeout(undoTimer);
+      undoDeleteBar.classList.add('hidden');
+    });
 
     function formatCurrency(num) {
       return 'NT$ ' + Number(num || 0).toLocaleString('zh-TW');
