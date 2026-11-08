@@ -212,16 +212,20 @@
           </div>
         </div>
 
-        <!-- Segmented Navigation & CSV Export -->
-        <div class="flex items-center gap-2">
+        <!-- Segmented Navigation & Cloud Backup / CSV Export -->
+        <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
           <div class="inline-flex p-1 rounded-2xl bg-[#EFECE6] border border-[#E6E1D8]">
-            <button id="tabBtnEntry" type="button" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white text-[#1C1917] shadow-xs transition cursor-pointer">
+            <button id="tabBtnEntry" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white text-[#1C1917] shadow-xs transition cursor-pointer">
               語音記帳
             </button>
-            <button id="tabBtnList" type="button" class="px-3.5 py-1.5 rounded-xl text-xs font-medium text-[#57534E] hover:text-[#1C1917] transition cursor-pointer">
+            <button id="tabBtnList" type="button" class="px-3 py-1.5 rounded-xl text-xs font-medium text-[#57534E] hover:text-[#1C1917] transition cursor-pointer">
               消費明細 (<span id="tabCountBadge" class="font-num">0</span>)
             </button>
           </div>
+          <button id="openCloudBoxBtn" type="button" title="Google 雲端每日自動備份設定與還原" class="px-3 py-2 rounded-2xl border border-[#A7F3D0] bg-[#ECFDF5]/80 hover:bg-[#ECFDF5] text-xs font-semibold text-[#0F766E] flex items-center gap-1.5 transition cursor-pointer">
+            <span id="cloudStatusDot" class="w-2 h-2 rounded-full bg-amber-500"></span>
+            <span>☁️ 雲端備份</span>
+          </button>
           <button id="exportCsvBtn" type="button" title="預覽與匯出 CSV 對帳單" class="px-3 py-2 rounded-2xl border border-[#E6E1D8] bg-[#FAF8F4] hover:bg-[#EFECE6] text-xs font-semibold text-[#57534E] transition cursor-pointer">
             匯出 CSV
           </button>
@@ -252,6 +256,81 @@
       <div id="statusBanner" class="hidden rounded-2xl px-4 py-3 text-xs font-medium border border-amber-300 bg-amber-50/90 text-amber-950 flex items-start justify-between gap-3">
         <span id="statusBannerText" class="leading-relaxed"></span>
         <button id="statusBannerClose" type="button" class="text-xs font-semibold underline opacity-80 hover:opacity-100 cursor-pointer shrink-0">關閉</button>
+      </div>
+
+      <!-- Google Cloud Auto-Backup & Restore Drawer -->
+      <div id="cloudBackupBox" class="hidden rounded-2xl border border-[#A7F3D0] bg-[#FAF8F4] p-4 space-y-3.5">
+        <div class="flex items-start justify-between gap-2">
+          <div class="space-y-0.5">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xs sm:text-sm font-bold text-[#0F766E]">☁️ Google 雲端每日自動備份與還原</span>
+              <span id="cloudBackupBadge" class="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold">今日待備份</span>
+            </div>
+            <p id="lastBackupTimeText" class="text-xs text-[#57534E]">
+              尚未執行今日雲端備份 ・ 目標雲端資料夾：<a href="https://drive.google.com/drive/folders/1LDbW8D5f17IADGWVS3iyCZK0tn-ZXJZx" target="_blank" rel="noopener noreferrer" class="text-[#0F766E] font-semibold underline">Anti / 語音刷卡記帳_自動備份 ↗</a>
+            </p>
+          </div>
+          <button id="closeCloudBoxBtn" type="button" class="px-2.5 py-1 rounded-xl border border-[#E6E1D8] bg-white text-xs text-[#57534E] cursor-pointer shrink-0">
+            收起
+          </button>
+        </div>
+
+        <!-- Daily Auto-Backup Switch + Action Buttons -->
+        <div class="flex flex-wrap items-center justify-between gap-2.5 pt-1 border-t border-[#E6E1D8]">
+          <label class="flex items-center gap-2 text-xs font-semibold text-[#1C1917] cursor-pointer select-none">
+            <input id="dailyAutoBackupToggle" type="checkbox" checked class="accent-[#0F766E] w-4 h-4 rounded cursor-pointer" />
+            <span>啟用每日自動備份至 Google 雲端（打開網頁或新增紀錄時自動同步）</span>
+          </label>
+
+          <div class="flex items-center gap-2 flex-wrap">
+            <button id="backupNowBtn" type="button" class="px-3.5 py-2 rounded-xl bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-semibold shadow-2xs active:scale-95 transition cursor-pointer">
+              ☁️ 立即備份至 Google 雲端
+            </button>
+            <button id="restoreFromCloudBtn" type="button" class="px-3 py-2 rounded-xl border border-[#A7F3D0] bg-white hover:bg-[#ECFDF5] text-[#0F766E] text-xs font-semibold active:scale-95 transition cursor-pointer">
+              📥 從雲端拉回還原
+            </button>
+            <button id="importFileBtn" type="button" class="px-3 py-2 rounded-xl border border-[#D5CFC4] bg-white hover:bg-[#EFECE6] text-[#57534E] text-xs font-semibold active:scale-95 transition cursor-pointer">
+              📂 匯入備份檔 (.csv/.json)
+            </button>
+            <input id="importBackupFileInput" type="file" accept=".csv,.json" class="hidden" />
+          </div>
+        </div>
+
+        <!-- Google Apps Script Webhook URL Setup -->
+        <div class="rounded-xl bg-white border border-[#E6E1D8] p-3 space-y-2">
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <span class="text-xs font-semibold text-[#1C1917]">🔗 Google 雲端硬碟自動同步連結（設定一次即可全自動背景備份）</span>
+            <button id="toggleGasGuideBtn" type="button" class="text-xs text-[#0F766E] font-semibold hover:underline cursor-pointer">
+              📋 複製專屬雲端腳本與教學
+            </button>
+          </div>
+          <div class="flex items-center gap-2">
+            <input
+              id="gasWebhookInput"
+              type="url"
+              placeholder="貼上您的 Google Apps Script 網頁應用程式網址 (https://script.google.com/macros/s/.../exec)"
+              class="field-input flex-1 rounded-xl px-3 py-1.5 text-xs placeholder:text-[#8A847C]"
+            />
+            <button id="saveGasUrlBtn" type="button" class="px-3 py-1.5 rounded-xl bg-[#EFECE6] hover:bg-[#E5E0D5] text-[#1C1917] text-xs font-semibold cursor-pointer shrink-0">
+              儲存網址
+            </button>
+          </div>
+
+          <!-- Expandable 1-minute GAS Setup Guide -->
+          <div id="gasGuideSection" class="hidden pt-2 border-t border-[#E6E1D8] space-y-2 text-xs text-[#57534E]">
+            <p class="leading-relaxed">
+              1. 點擊下方「複製腳本程式碼」，前往 <a href="https://script.google.com/home/start" target="_blank" rel="noopener noreferrer" class="text-[#0F766E] underline font-semibold">Google Apps Script</a> 點選「新專案」貼上。<br/>
+              2. 點擊右上角「部署 → 新增部署作業」，類型選「網頁應用程式」，執行身分選「我」，誰可以存取選「所有人」，部署後複製網址貼回上方欄位即可（已預先綁定您的 <code class="px-1 py-0.5 rounded bg-[#FAF8F4]">Anti / 語音刷卡記帳_自動備份</code> 資料夾）。
+            </p>
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-semibold text-[#8A847C]">Google Apps Script 程式碼（已綁定資料夾 ID：1LDbW8D5f17IADGWVS3iyCZK0tn-ZXJZx）</span>
+              <button id="copyGasCodeBtn" type="button" class="px-2.5 py-1 rounded-lg bg-[#0F766E] text-white text-xs font-semibold cursor-pointer">
+                複製腳本程式碼
+              </button>
+            </div>
+            <textarea id="gasCodeTextarea" readonly rows="5" class="w-full rounded-lg border border-[#E6E1D8] bg-[#FAF8F4] p-2 text-[11px] font-mono text-[#1C1917] focus:outline-none"></textarea>
+          </div>
+        </div>
       </div>
 
       <!-- CSV Modal / Drawer -->
@@ -671,6 +750,9 @@
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
       } catch (e) {}
+      if (typeof scheduleAutoCloudBackup === 'function') {
+        scheduleAutoCloudBackup();
+      }
     }
 
     function parseChineseNumber(str) {
@@ -1298,7 +1380,367 @@
       csvPreviewBox.classList.add('hidden');
     });
 
+    // =========================================================================
+    // Google Cloud Daily Auto-Backup & Restore System
+    // Target Drive Folder: Anti / 語音刷卡記帳_自動備份 (1LDbW8D5f17IADGWVS3iyCZK0tn-ZXJZx)
+    // =========================================================================
+    const CLOUD_CFG_KEY = 'cc_voice_cloud_cfg_v1';
+    const DRIVE_FOLDER_ID = '1LDbW8D5f17IADGWVS3iyCZK0tn-ZXJZx';
+    const DRIVE_FOLDER_URL = 'https://drive.google.com/drive/folders/' + DRIVE_FOLDER_ID;
+
+    const openCloudBoxBtn = document.getElementById('openCloudBoxBtn');
+    const closeCloudBoxBtn = document.getElementById('closeCloudBoxBtn');
+    const cloudBackupBox = document.getElementById('cloudBackupBox');
+    const cloudStatusDot = document.getElementById('cloudStatusDot');
+    const cloudBackupBadge = document.getElementById('cloudBackupBadge');
+    const lastBackupTimeText = document.getElementById('lastBackupTimeText');
+    const dailyAutoBackupToggle = document.getElementById('dailyAutoBackupToggle');
+    const backupNowBtn = document.getElementById('backupNowBtn');
+    const restoreFromCloudBtn = document.getElementById('restoreFromCloudBtn');
+    const importFileBtn = document.getElementById('importFileBtn');
+    const importBackupFileInput = document.getElementById('importBackupFileInput');
+    const gasWebhookInput = document.getElementById('gasWebhookInput');
+    const saveGasUrlBtn = document.getElementById('saveGasUrlBtn');
+    const toggleGasGuideBtn = document.getElementById('toggleGasGuideBtn');
+    const gasGuideSection = document.getElementById('gasGuideSection');
+    const gasCodeTextarea = document.getElementById('gasCodeTextarea');
+    const copyGasCodeBtn = document.getElementById('copyGasCodeBtn');
+
+    const GAS_SCRIPT_TEMPLATE = `// Google Apps Script：語音刷卡記帳 — 每日自動備份至 Google 雲端硬碟
+// 已預先綁定您的雲端資料夾：Anti / 語音刷卡記帳_自動備份
+const FOLDER_ID = '${DRIVE_FOLDER_ID}';
+
+function doPost(e) {
+  const folder = DriveApp.getFolderById(FOLDER_ID);
+  const payload = JSON.parse(e.postData.contents);
+  const dateStr = payload.date || Utilities.formatDate(new Date(), 'Asia/Taipei', 'yyyy-MM-dd');
+
+  // 1. 儲存/更新最新完整 JSON 備份（供跨裝置一鍵還原使用）
+  saveOrUpdateFile(folder, '信用卡消費明細_最新完整備份.json', JSON.stringify(payload.records || [], null, 2), MimeType.PLAIN_TEXT);
+
+  // 2. 儲存/更新當日 CSV 對帳單備份
+  if (payload.csv) {
+    saveOrUpdateFile(folder, '信用卡消費明細_自動備份_' + dateStr + '.csv', '\\uFEFF' + payload.csv, MimeType.CSV);
+  }
+
+  return ContentService.createTextOutput(JSON.stringify({ ok: true, date: dateStr }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doGet() {
+  const folder = DriveApp.getFolderById(FOLDER_ID);
+  const files = folder.getFilesByName('信用卡消費明細_最新完整備份.json');
+  if (files.hasNext()) {
+    const content = files.next().getBlob().getDataAsString('UTF-8');
+    return ContentService.createTextOutput(content).setMimeType(ContentService.MimeType.JSON);
+  }
+  return ContentService.createTextOutput('[]').setMimeType(ContentService.MimeType.JSON);
+}
+
+function saveOrUpdateFile(folder, filename, content, mimeType) {
+  const existing = folder.getFilesByName(filename);
+  if (existing.hasNext()) {
+    existing.next().setContent(content);
+  } else {
+    folder.createFile(filename, content, mimeType);
+  }
+}`;
+
+    gasCodeTextarea.value = GAS_SCRIPT_TEMPLATE;
+
+    let cloudConfig = {
+      enabled: true,
+      webhookUrl: '',
+      lastBackupDate: '',
+      lastBackupTime: ''
+    };
+
+    try {
+      const savedCfg = localStorage.getItem(CLOUD_CFG_KEY);
+      if (savedCfg) {
+        cloudConfig = { ...cloudConfig, ...JSON.parse(savedCfg) };
+      }
+    } catch (e) {}
+
+    dailyAutoBackupToggle.checked = cloudConfig.enabled !== false;
+    gasWebhookInput.value = cloudConfig.webhookUrl || '';
+
+    function saveCloudConfig() {
+      try {
+        localStorage.setItem(CLOUD_CFG_KEY, JSON.stringify(cloudConfig));
+      } catch (e) {}
+      updateCloudStatusUi();
+    }
+
+    function updateCloudStatusUi() {
+      const todayStr = getTodayStr(0);
+      const isBackedUpToday = cloudConfig.lastBackupDate === todayStr;
+
+      if (isBackedUpToday) {
+        cloudStatusDot.className = 'w-2 h-2 rounded-full bg-[#0F766E]';
+        cloudBackupBadge.className = 'text-[11px] px-2 py-0.5 rounded-full bg-[#ECFDF5] text-[#0F766E] border border-[#A7F3D0] font-semibold';
+        cloudBackupBadge.textContent = '✓ 今日已備份';
+      } else {
+        cloudStatusDot.className = 'w-2 h-2 rounded-full bg-amber-500';
+        cloudBackupBadge.className = 'text-[11px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold';
+        cloudBackupBadge.textContent = cloudConfig.webhookUrl ? '待自動同步' : '今日待備份';
+      }
+
+      const timeDisplay = cloudConfig.lastBackupTime ? `上次雲端備份：${cloudConfig.lastBackupTime}` : '尚未執行今日雲端備份';
+      lastBackupTimeText.innerHTML = `${escapeHtml(timeDisplay)} ・ 雲端資料夾：<a href="${DRIVE_FOLDER_URL}" target="_blank" rel="noopener noreferrer" class="text-[#0F766E] font-semibold underline">Anti / 語音刷卡記帳_自動備份 ↗</a>`;
+    }
+
+    openCloudBoxBtn.addEventListener('click', () => {
+      cloudBackupBox.classList.toggle('hidden');
+    });
+
+    closeCloudBoxBtn.addEventListener('click', () => {
+      cloudBackupBox.classList.add('hidden');
+    });
+
+    toggleGasGuideBtn.addEventListener('click', () => {
+      gasGuideSection.classList.toggle('hidden');
+    });
+
+    copyGasCodeBtn.addEventListener('click', () => {
+      gasCodeTextarea.select();
+      try {
+        navigator.clipboard.writeText(gasCodeTextarea.value);
+      } catch (e) {
+        document.execCommand('copy');
+      }
+      copyGasCodeBtn.textContent = '✓ 已複製腳本！';
+      setTimeout(() => { copyGasCodeBtn.textContent = '複製腳本程式碼'; }, 2000);
+    });
+
+    dailyAutoBackupToggle.addEventListener('change', () => {
+      cloudConfig.enabled = dailyAutoBackupToggle.checked;
+      saveCloudConfig();
+      showToast(cloudConfig.enabled ? '已開啟每日自動備份' : '已暫停每日自動備份');
+    });
+
+    saveGasUrlBtn.addEventListener('click', () => {
+      cloudConfig.webhookUrl = gasWebhookInput.value.trim();
+      saveCloudConfig();
+      if (cloudConfig.webhookUrl) {
+        showToast('已儲存雲端同步網址，正在執行首次自動備份...');
+        performCloudBackup({ silent: false, forceManual: false });
+      } else {
+        showToast('已清除雲端同步網址');
+      }
+    });
+
+    function getNowTimeStr() {
+      const d = new Date();
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const hh = String(d.getHours()).padStart(2, '0');
+      const min = String(d.getMinutes()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+    }
+
+    async function performCloudBackup({ silent = false, forceManual = false } = {}) {
+      if (records.length === 0) {
+        if (!silent) showBanner('目前尚無刷卡紀錄可備份。');
+        return;
+      }
+
+      const todayStr = getTodayStr(0);
+      const csvStr = buildCsvString();
+      const webhookUrl = (cloudConfig.webhookUrl || '').trim();
+
+      // Path 1: Automatic Background Cloud Sync via Google Apps Script Webhook
+      if (webhookUrl) {
+        try {
+          if (!silent) {
+            backupNowBtn.textContent = '☁️ 正在備份至雲端...';
+            backupNowBtn.disabled = true;
+          }
+          await fetch(webhookUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+              date: todayStr,
+              timestamp: new Date().toISOString(),
+              records,
+              csv: csvStr
+            })
+          });
+          cloudConfig.lastBackupDate = todayStr;
+          cloudConfig.lastBackupTime = getNowTimeStr();
+          saveCloudConfig();
+          if (!silent) {
+            showToast('✓ 已備份至 Google 雲端硬碟！');
+          }
+        } catch (err) {
+          if (!silent) {
+            showBanner('⚠️ 雲端連線失敗，請檢查您的 Google Apps Script 網址是否正確。');
+          }
+        } finally {
+          if (!silent) {
+            backupNowBtn.textContent = '☁️ 立即備份至 Google 雲端';
+            backupNowBtn.disabled = false;
+          }
+        }
+        return;
+      }
+
+      // Path 2: If no Webhook URL is set and user clicked "立即備份至 Google 雲端"
+      if (forceManual) {
+        const filename = `信用卡消費明細_自動備份_${todayStr}.csv`;
+        const fileBlob = new Blob(['\uFEFF' + csvStr], { type: 'text/csv;charset=utf-8;' });
+        const fileObj = new File([fileBlob], filename, { type: 'text/csv' });
+
+        // Try Mobile Native Share Sheet (allows 1-tap "Save to Google Drive" on iOS / Android)
+        if (navigator.canShare && navigator.canShare({ files: [fileObj] })) {
+          try {
+            await navigator.share({
+              title: `語音刷卡記帳備份 (${todayStr})`,
+              text: '請選擇「雲端硬碟 (Google Drive)」即可直接存入您的 Google 雲端',
+              files: [fileObj]
+            });
+            cloudConfig.lastBackupDate = todayStr;
+            cloudConfig.lastBackupTime = getNowTimeStr() + ' (手機分享備份)';
+            saveCloudConfig();
+            showToast('✓ 已完成今日雲端備份！');
+            return;
+          } catch (shareErr) {
+            if (shareErr && shareErr.name === 'AbortError') return;
+          }
+        }
+
+        // Fallback: Download CSV backup file & open Google Drive folder
+        const url = URL.createObjectURL(fileBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        cloudConfig.lastBackupDate = todayStr;
+        cloudConfig.lastBackupTime = getNowTimeStr() + ' (已下載備份檔)';
+        saveCloudConfig();
+        cloudBackupBox.classList.remove('hidden');
+        gasGuideSection.classList.remove('hidden');
+        showToast('已下載今日備份檔！若要每日全自動背景同步，請展開下方設定連結');
+      }
+    }
+
+    let autoBackupTimer = null;
+    function scheduleAutoCloudBackup() {
+      if (!cloudConfig.enabled || !cloudConfig.webhookUrl) return;
+      if (autoBackupTimer) clearTimeout(autoBackupTimer);
+      autoBackupTimer = setTimeout(() => {
+        performCloudBackup({ silent: true, forceManual: false });
+      }, 1500);
+    }
+
+    // Daily Auto-Backup Check on App Launch
+    function checkDailyAutoBackupOnLoad() {
+      updateCloudStatusUi();
+      if (!cloudConfig.enabled || records.length === 0) return;
+      const todayStr = getTodayStr(0);
+      if (cloudConfig.lastBackupDate !== todayStr) {
+        if (cloudConfig.webhookUrl) {
+          performCloudBackup({ silent: true, forceManual: false });
+        }
+      }
+    }
+
+    backupNowBtn.addEventListener('click', () => {
+      performCloudBackup({ silent: false, forceManual: true });
+    });
+
+    restoreFromCloudBtn.addEventListener('click', async () => {
+      const webhookUrl = (cloudConfig.webhookUrl || '').trim();
+      if (!webhookUrl) {
+        gasGuideSection.classList.remove('hidden');
+        showBanner('請先貼上您的 Google Apps Script 網址，或點擊「📂 匯入備份檔 (.csv/.json)」從您的 Google 雲端硬碟選取備份檔還原。');
+        return;
+      }
+      try {
+        restoreFromCloudBtn.textContent = '📥 正在從雲端讀取...';
+        restoreFromCloudBtn.disabled = true;
+        const res = await fetch(webhookUrl);
+        const cloudRecords = await res.json();
+        if (Array.isArray(cloudRecords) && cloudRecords.length > 0) {
+          records = cloudRecords;
+          saveToStorage();
+          renderRecords();
+          showToast(`✓ 已從 Google 雲端還原 ${cloudRecords.length} 筆紀錄！`);
+        } else {
+          showBanner('雲端目前尚無可還原的備份紀錄。');
+        }
+      } catch (err) {
+        showBanner('⚠️ 無法從雲端讀取備份，請改用「📂 匯入備份檔 (.csv/.json)」選取雲端硬碟中的檔案還原。');
+      } finally {
+        restoreFromCloudBtn.textContent = '📥 從雲端拉回還原';
+        restoreFromCloudBtn.disabled = false;
+      }
+    });
+
+    importFileBtn.addEventListener('click', () => {
+      importBackupFileInput.value = '';
+      importBackupFileInput.click();
+    });
+
+    importBackupFileInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const text = String(ev.target.result || '').trim();
+        if (!text) return;
+
+        try {
+          if (file.name.endsWith('.json') || text.startsWith('[')) {
+            const parsed = JSON.parse(text);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              records = parsed;
+              saveToStorage();
+              renderRecords();
+              showToast(`✓ 已成功匯入還原 ${parsed.length} 筆紀錄！`);
+              return;
+            }
+          }
+
+          // Parse CSV Backup File
+          const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/).filter((l) => l.trim());
+          const imported = [];
+          for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (i === 0 && (line.includes('日期') || line.includes('消費地點'))) continue;
+            const cols = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+            if (!cols || cols.length < 4) continue;
+            const clean = (s) => s.replace(/^"|"$/g, '').replace(/""/g, '"').trim();
+            const date = clean(cols[0]);
+            const location = clean(cols[1]);
+            const item = clean(cols[2]);
+            const amount = parseInt(clean(cols[3]), 10);
+            if (date && location && item && !isNaN(amount)) {
+              imported.push({ id: 'rec-' + Date.now() + '-' + i, date, location, item, amount });
+            }
+          }
+
+          if (imported.length > 0) {
+            records = imported;
+            saveToStorage();
+            renderRecords();
+            showToast(`✓ 已從 CSV 備份檔還原 ${imported.length} 筆紀錄！`);
+          } else {
+            showBanner('無法解析此備份檔案格式，請確認是否為本系統匯出的 CSV 或 JSON 備份檔。');
+          }
+        } catch (err) {
+          showBanner('匯入備份檔失敗，請確認檔案格式是否正確。');
+        }
+      };
+      reader.readAsText(file, 'UTF-8');
+    });
+
     renderRecords();
+    checkDailyAutoBackupOnLoad();
   </script>
 </body>
 </html>
