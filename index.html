@@ -3,14 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#2563eb" />
+  <meta name="theme-color" content="#F6F4F0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="語音記帳" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <title>語音刷卡記帳 — 信用卡消費明細</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='28' fill='%232563eb'/%3E%3Crect x='22' y='34' width='76' height='52' rx='8' fill='none' stroke='white' stroke-width='7'/%3E%3Cline x1='22' y1='52' x2='98' y2='52' stroke='white' stroke-width='7'/%3E%3Ccircle cx='82' cy='70' r='6' fill='%23fbbf24'/%3E%3C/svg%3E" />
-  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='28' fill='%232563eb'/%3E%3Crect x='22' y='34' width='76' height='52' rx='8' fill='none' stroke='white' stroke-width='7'/%3E%3Cline x1='22' y1='52' x2='98' y2='52' stroke='white' stroke-width='7'/%3E%3Ccircle cx='82' cy='70' r='6' fill='%23fbbf24'/%3E%3C/svg%3E" />
+  <meta name="description" content="支援智慧整句語音辨識的信用卡消費記帳工具，自動拆解日期、消費地點、項目與金額。" />
+  <title>語音刷卡記帳 — 智慧信用卡消費明細</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='30' fill='%230F766E'/%3E%3Crect x='22' y='34' width='76' height='52' rx='9' fill='none' stroke='white' stroke-width='7'/%3E%3Cline x1='22' y1='52' x2='98' y2='52' stroke='white' stroke-width='7'/%3E%3Ccircle cx='82' cy='70' r='6' fill='%23FBBF24'/%3E%3C/svg%3E" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='30' fill='%230F766E'/%3E%3Crect x='22' y='34' width='76' height='52' rx='9' fill='none' stroke='white' stroke-width='7'/%3E%3Cline x1='22' y1='52' x2='98' y2='52' stroke='white' stroke-width='7'/%3E%3Ccircle cx='82' cy='70' r='6' fill='%23FBBF24'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet" />
   <script>
     (function() {
       const manifest = {
@@ -18,10 +22,10 @@
         short_name: "語音記帳",
         start_url: "./",
         display: "standalone",
-        background_color: "#f8fafc",
-        theme_color: "#2563eb",
+        background_color: "#F6F4F0",
+        theme_color: "#0F766E",
         icons: [{
-          src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='28' fill='%232563eb'/%3E%3Crect x='22' y='34' width='76' height='52' rx='8' fill='none' stroke='white' stroke-width='7'/%3E%3Cline x1='22' y1='52' x2='98' y2='52' stroke='white' stroke-width='7'/%3E%3Ccircle cx='82' cy='70' r='6' fill='%23fbbf24'/%3E%3C/svg%3E",
+          src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='30' fill='%230F766E'/%3E%3Crect x='22' y='34' width='76' height='52' rx='9' fill='none' stroke='white' stroke-width='7'/%3E%3Cline x1='22' y1='52' x2='98' y2='52' stroke='white' stroke-width='7'/%3E%3Ccircle cx='82' cy='70' r='6' fill='%23FBBF24'/%3E%3C/svg%3E",
           sizes: "192x192 512x512",
           type: "image/svg+xml",
           purpose: "any maskable"
@@ -34,355 +38,470 @@
     })();
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
   <style>
     :root {
       color-scheme: light;
-      --background: #f8fafc;
-      --card: #ffffff;
-      --foreground: #0f172a;
-      --muted-foreground: #64748b;
-      --border: #e2e8f0;
-      --primary: #2563eb;
-      --primary-foreground: #ffffff;
-      --secondary: #f1f5f9;
-      --secondary-foreground: #1e293b;
+      --bg-canvas: #F5F2EB;
+      --bg-surface: #FFFFFF;
+      --bg-subtle: #FAF8F4;
+      --bg-pill: #EFECE6;
+      --ink-primary: #1C1917;
+      --ink-secondary: #57534E;
+      --ink-muted: #8A847C;
+      --border-soft: #E6E1D8;
+      --border-strong: #D5CFC4;
+      --accent: #0F766E;
+      --accent-hover: #115E59;
+      --accent-soft: #ECFDF5;
+      --accent-ring: rgba(15, 118, 110, 0.14);
+      --danger: #E11D48;
+      --danger-soft: #FFF1F2;
     }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-canvas);
+      background-image:
+        radial-gradient(circle at 15% 0%, rgba(15, 118, 110, 0.06) 0%, transparent 45%),
+        radial-gradient(circle at 85% 0%, rgba(217, 119, 6, 0.05) 0%, transparent 40%);
+      color: var(--ink-primary);
+    }
+
+    .font-num {
+      font-family: 'JetBrains Mono', 'Plus Jakarta Sans', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .surface-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-soft);
+      box-shadow:
+        0 12px 32px -10px rgba(28, 25, 23, 0.06),
+        0 2px 6px -1px rgba(28, 25, 23, 0.03);
+    }
+
+    /* Tactile Large Circular Mic Button */
+    .mic-orb {
+      width: 116px;
+      height: 116px;
+      border-radius: 9999px;
+      background: linear-gradient(145deg, #14867D 0%, #0F766E 55%, #0B5C56 100%);
+      color: #FFFFFF;
+      box-shadow:
+        0 14px 28px -6px rgba(15, 118, 110, 0.38),
+        0 0 0 8px rgba(15, 118, 110, 0.10),
+        inset 0 2px 3px rgba(255, 255, 255, 0.32);
+      transition: all 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .mic-orb:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow:
+        0 18px 32px -6px rgba(15, 118, 110, 0.44),
+        0 0 0 10px rgba(15, 118, 110, 0.13),
+        inset 0 2px 3px rgba(255, 255, 255, 0.38);
+    }
+
+    .mic-orb:active {
+      transform: translateY(1px) scale(0.96);
+    }
+
+    .mic-orb.recording-state {
+      background: linear-gradient(145deg, #F43F5E 0%, #E11D48 60%, #BE123C 100%);
+      box-shadow:
+        0 14px 28px -6px rgba(225, 29, 72, 0.42),
+        0 0 0 8px rgba(225, 29, 72, 0.14),
+        inset 0 2px 3px rgba(255, 255, 255, 0.35);
+    }
+
     @keyframes pulse-ring {
-      0% { transform: scale(0.95); opacity: 0.85; }
-      70% { transform: scale(1.28); opacity: 0; }
-      100% { transform: scale(1.28); opacity: 0; }
+      0% { transform: scale(0.96); opacity: 0.85; }
+      75% { transform: scale(1.32); opacity: 0; }
+      100% { transform: scale(1.32); opacity: 0; }
     }
+
     @keyframes pulse-ring-outer {
-      0% { transform: scale(1); opacity: 0.5; }
-      70% { transform: scale(1.45); opacity: 0; }
-      100% { transform: scale(1.45); opacity: 0; }
+      0% { transform: scale(1); opacity: 0.45; }
+      75% { transform: scale(1.52); opacity: 0; }
+      100% { transform: scale(1.52); opacity: 0; }
     }
+
+    .recording-state::before {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 9999px;
+      border: 2.5px solid #F43F5E;
+      animation: pulse-ring 1.3s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+      pointer-events: none;
+    }
+
+    .recording-state::after {
+      content: '';
+      position: absolute;
+      inset: -14px;
+      border-radius: 9999px;
+      border: 2px solid rgba(244, 63, 94, 0.4);
+      animation: pulse-ring-outer 1.3s cubic-bezier(0.215, 0.61, 0.355, 1) 0.2s infinite;
+      pointer-events: none;
+    }
+
     @keyframes wave {
       0%, 100% { height: 5px; }
       50% { height: 18px; }
     }
-    @keyframes field-flash {
-      0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.55); }
-      50% { box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.35); }
-      100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
-    }
-    .recording-ring::before {
-      content: '';
-      position: absolute;
-      inset: -8px;
-      border-radius: 9999px;
-      border: 3px solid #ef4444;
-      animation: pulse-ring 1.2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
-      pointer-events: none;
-    }
-    .recording-ring::after {
-      content: '';
-      position: absolute;
-      inset: -16px;
-      border-radius: 9999px;
-      border: 2px solid rgba(239, 68, 68, 0.45);
-      animation: pulse-ring-outer 1.2s cubic-bezier(0.215, 0.61, 0.355, 1) 0.2s infinite;
-      pointer-events: none;
-    }
+
     .wave-bar {
-      width: 3px;
-      background-color: #ef4444;
+      width: 3.5px;
+      background-color: #E11D48;
       border-radius: 9999px;
       animation: wave 0.75s ease-in-out infinite;
     }
     .wave-bar:nth-child(2) { animation-delay: 0.15s; }
     .wave-bar:nth-child(3) { animation-delay: 0.3s; }
     .wave-bar:nth-child(4) { animation-delay: 0.45s; }
+
+    @keyframes field-flash {
+      0% { box-shadow: 0 0 0 0 rgba(15, 118, 110, 0.45); background-color: #ECFDF5; }
+      60% { box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.22); background-color: #ECFDF5; }
+      100% { box-shadow: 0 0 0 0 rgba(15, 118, 110, 0); }
+    }
+
     .flash-highlight {
-      animation: field-flash 0.9s ease-out;
+      animation: field-flash 0.95s ease-out;
+    }
+
+    .field-input {
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-soft);
+      color: var(--ink-primary);
+      transition: all 0.18s ease;
+    }
+
+    .field-input:focus {
+      background-color: #FFFFFF;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-ring);
+      outline: none;
     }
   </style>
 </head>
-<body class="bg-[var(--background)] text-[var(--foreground)] antialiased p-3 sm:p-6 min-h-screen">
-  <div class="max-w-2xl mx-auto bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
+<body class="antialiased py-4 px-3 sm:py-8 sm:px-6 min-h-screen">
+  <main class="max-w-2xl mx-auto space-y-4">
 
-    <!-- Top Bar: Title + Summary + View Tabs -->
-    <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[var(--border)]">
-      <div class="flex items-center gap-2.5">
-        <div class="w-9 h-9 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] flex items-center justify-center shadow-sm shrink-0">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="5" width="20" height="14" rx="2" />
-            <line x1="2" y1="10" x2="22" y2="10" />
-          </svg>
+    <!-- Main Container Card -->
+    <div class="surface-card rounded-3xl p-4 sm:p-7 space-y-5">
+
+      <!-- Header Bar -->
+      <header class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-[#0F766E] text-white flex items-center justify-center shadow-sm shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="5" width="20" height="14" rx="2.5" />
+              <line x1="2" y1="10" x2="22" y2="10" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-lg sm:text-xl font-bold tracking-tight text-[#1C1917]">語音刷卡記帳</h1>
+            <p class="text-xs text-[#8A847C]">開口說一聲，自動記錄每筆信用卡消費</p>
+          </div>
         </div>
-        <div>
-          <h1 class="text-base sm:text-lg font-bold leading-tight text-[var(--foreground)]">語音刷卡記帳</h1>
-          <p class="text-xs text-[var(--muted-foreground)] mt-0.5">
-            今日 <span id="todayTotal" class="font-semibold text-[var(--foreground)] tabular-nums">NT$ 0</span> ・ 總計 <span id="grandTotal" class="font-semibold text-[var(--primary)] tabular-nums">NT$ 0</span> (<span id="totalCount">0</span>筆)
-          </p>
-        </div>
-      </div>
 
-      <div class="flex items-center gap-1.5">
-        <button id="tabBtnEntry" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--primary)] text-[var(--primary-foreground)] transition cursor-pointer">
-          語音記帳
-        </button>
-        <button id="tabBtnList" type="button" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-85 transition cursor-pointer">
-          消費明細 (<span id="tabCountBadge">0</span>)
-        </button>
-        <button id="exportCsvBtn" type="button" title="預覽與匯出 CSV 對帳單" class="px-2.5 py-1.5 rounded-lg border border-[var(--border)] text-xs font-medium text-[var(--foreground)] hover:opacity-80 transition cursor-pointer">
-          匯出 CSV
-        </button>
-      </div>
-    </div>
-
-    <!-- Global Warning / Status Banner -->
-    <div id="statusBanner" class="hidden rounded-xl px-3.5 py-2.5 text-xs font-medium border border-amber-500/40 bg-amber-50 text-[var(--foreground)] flex items-start justify-between gap-2">
-      <span id="statusBannerText" class="leading-relaxed"></span>
-      <button id="statusBannerClose" type="button" class="text-xs underline opacity-75 hover:opacity-100 cursor-pointer shrink-0">關閉</button>
-    </div>
-
-    <!-- CSV Modal / Drawer -->
-    <div id="csvPreviewBox" class="hidden rounded-xl border border-[var(--border)] bg-[var(--background)] p-3 space-y-2">
-      <div class="flex items-center justify-between">
-        <span class="text-xs font-semibold text-[var(--foreground)]">CSV 對帳單內容</span>
+        <!-- Segmented Navigation & CSV Export -->
         <div class="flex items-center gap-2">
-          <button id="copyCsvBtn" type="button" class="px-2.5 py-1 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] text-xs font-semibold cursor-pointer">
-            複製 CSV
-          </button>
-          <button id="closeCsvBtn" type="button" class="px-2 py-1 rounded-lg border border-[var(--border)] text-xs text-[var(--muted-foreground)] cursor-pointer">
-            收起
+          <div class="inline-flex p-1 rounded-2xl bg-[#EFECE6] border border-[#E6E1D8]">
+            <button id="tabBtnEntry" type="button" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white text-[#1C1917] shadow-xs transition cursor-pointer">
+              語音記帳
+            </button>
+            <button id="tabBtnList" type="button" class="px-3.5 py-1.5 rounded-xl text-xs font-medium text-[#57534E] hover:text-[#1C1917] transition cursor-pointer">
+              消費明細 (<span id="tabCountBadge" class="font-num">0</span>)
+            </button>
+          </div>
+          <button id="exportCsvBtn" type="button" title="預覽與匯出 CSV 對帳單" class="px-3 py-2 rounded-2xl border border-[#E6E1D8] bg-[#FAF8F4] hover:bg-[#EFECE6] text-xs font-semibold text-[#57534E] transition cursor-pointer">
+            匯出 CSV
           </button>
         </div>
-      </div>
-      <textarea id="csvTextarea" readonly rows="4" class="w-full rounded-lg border border-[var(--border)] bg-[var(--card)] p-2 text-xs font-mono text-[var(--foreground)] focus:outline-none"></textarea>
-    </div>
+      </header>
 
-    <!-- TAB 1: Voice Capture + 4-Field Form -->
-    <div id="viewEntry" class="space-y-4">
-      <!-- Voice Input Card with Large Circular Button -->
-      <div class="rounded-2xl border border-[var(--border)] bg-gradient-to-b from-blue-50/70 to-[var(--background)] p-4 sm:p-5 space-y-3.5">
-        <div class="flex items-start justify-between gap-2">
-          <div class="space-y-0.5">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-xs sm:text-sm font-bold text-[var(--foreground)]">智慧整句語音輸入</span>
-              <span id="formStatusToast" class="text-xs px-2 py-0.5 rounded-md bg-[var(--primary)] text-[var(--primary-foreground)] font-semibold hidden">已帶入結果</span>
+      <!-- Summary Metrics Strip -->
+      <section class="grid grid-cols-2 gap-3">
+        <div class="rounded-2xl bg-[#FAF8F4] border border-[#E6E1D8] px-4 py-3 flex flex-col justify-between">
+          <span class="text-xs font-medium text-[#8A847C]">今日刷卡消費</span>
+          <div class="mt-1 flex items-baseline justify-between gap-2">
+            <span id="todayTotal" class="font-num text-lg sm:text-xl font-bold text-[#1C1917]">NT$ 0</span>
+            <span class="text-[11px] font-medium text-[#8A847C]">Today</span>
+          </div>
+        </div>
+        <div class="rounded-2xl bg-[#ECFDF5]/75 border border-[#A7F3D0] px-4 py-3 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-[#0F766E]">累計消費總額</span>
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-white/90 text-[#0F766E] border border-[#A7F3D0]/60"><span id="totalCount" class="font-num">0</span> 筆紀錄</span>
+          </div>
+          <div class="mt-1">
+            <span id="grandTotal" class="font-num text-lg sm:text-xl font-bold text-[#0F766E]">NT$ 0</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Global Warning / Status Banner -->
+      <div id="statusBanner" class="hidden rounded-2xl px-4 py-3 text-xs font-medium border border-amber-300 bg-amber-50/90 text-amber-950 flex items-start justify-between gap-3">
+        <span id="statusBannerText" class="leading-relaxed"></span>
+        <button id="statusBannerClose" type="button" class="text-xs font-semibold underline opacity-80 hover:opacity-100 cursor-pointer shrink-0">關閉</button>
+      </div>
+
+      <!-- CSV Modal / Drawer -->
+      <div id="csvPreviewBox" class="hidden rounded-2xl border border-[#E6E1D8] bg-[#FAF8F4] p-4 space-y-2.5">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-[#1C1917]">CSV 對帳單預覽</span>
+          <div class="flex items-center gap-2">
+            <button id="copyCsvBtn" type="button" class="px-3 py-1.5 rounded-xl bg-[#0F766E] text-white text-xs font-semibold cursor-pointer hover:bg-[#115E59] transition">
+              複製 CSV
+            </button>
+            <button id="closeCsvBtn" type="button" class="px-2.5 py-1.5 rounded-xl border border-[#E6E1D8] bg-white text-xs text-[#57534E] cursor-pointer">
+              收起
+            </button>
+          </div>
+        </div>
+        <textarea id="csvTextarea" readonly rows="4" class="w-full rounded-xl border border-[#E6E1D8] bg-white p-3 text-xs font-mono text-[#1C1917] focus:outline-none"></textarea>
+      </div>
+
+      <!-- TAB 1: Voice Studio + 4-Field Form -->
+      <div id="viewEntry" class="space-y-5">
+
+        <!-- Voice Input Studio Card -->
+        <div class="rounded-3xl border border-[#E6E1D8] bg-gradient-to-b from-[#FAF8F4] to-[#F3EFE8]/70 p-5 sm:p-6 space-y-4">
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <div class="flex items-center gap-2">
+              <span class="inline-block w-2 h-2 rounded-full bg-[#0F766E]"></span>
+              <span class="text-xs sm:text-sm font-bold text-[#1C1917]">智慧整句語音輸入</span>
+              <span id="formStatusToast" class="text-xs px-2.5 py-0.5 rounded-full bg-[#0F766E] text-white font-semibold hidden">已帶入結果</span>
             </div>
-            <p class="text-xs text-[var(--muted-foreground)]">
-              例：<span class="text-[var(--foreground)] font-medium">「今天在星巴克買拿鐵 155 元」</span>（說完可再次點擊圓鈕完成，或停頓 3 秒自動完成）
+
+            <button
+              id="demoVoiceBtn"
+              type="button"
+              class="px-3 py-1.5 rounded-full border border-[#D5CFC4] bg-white hover:bg-[#FAF8F4] active:scale-95 text-xs font-semibold text-[#57534E] transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-[#0F766E]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              模擬語音示範
+            </button>
+          </div>
+
+          <!-- Centerpiece Large Circular Voice Button -->
+          <div class="flex flex-col items-center justify-center py-3">
+            <button
+              id="mainMicBtn"
+              type="button"
+              aria-label="語音輸入按鈕"
+              class="mic-orb relative flex flex-col items-center justify-center gap-1.5 cursor-pointer select-none"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 stroke-[2.2]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" x2="12" y1="19" y2="22"/>
+              </svg>
+              <span id="mainMicLabel" class="text-xs sm:text-sm font-bold tracking-wide">點擊說話</span>
+            </button>
+            <p class="mt-3.5 text-xs text-[#57534E] text-center">
+              試著說：<span class="font-semibold text-[#1C1917]">「今天在星巴克買拿鐵 155 元」</span>
             </p>
           </div>
 
-          <button
-            id="demoVoiceBtn"
-            type="button"
-            class="px-3 py-1.5 rounded-full border border-[var(--border)] bg-[var(--card)] hover:bg-slate-50 active:scale-95 text-xs font-semibold text-[var(--foreground)] transition flex items-center gap-1.5 cursor-pointer shadow-sm shrink-0"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-[var(--primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="5 3 19 12 5 21 5 3"></polygon>
-            </svg>
-            模擬語音示範
-          </button>
-        </div>
-
-        <!-- Large Circular Microphone Button Centerpiece -->
-        <div class="flex flex-col items-center justify-center py-2">
-          <button
-            id="mainMicBtn"
-            type="button"
-            aria-label="語音輸入按鈕"
-            class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[var(--primary)] text-[var(--primary-foreground)] shadow-lg shadow-blue-600/25 hover:bg-blue-700 active:scale-95 transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer select-none ring-4 ring-blue-100"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-9 h-9 sm:w-10 sm:h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-              <line x1="12" x2="12" y1="19" y2="22"/>
-            </svg>
-            <span id="mainMicLabel" class="text-xs sm:text-sm font-bold tracking-tight">點擊說話</span>
-          </button>
-        </div>
-
-        <!-- Live Transcript & Custom Sentence Test Box -->
-        <div id="voiceFeedbackBox" class="pt-3 border-t border-[var(--border)] space-y-2">
-          <div class="flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2 min-w-0">
-              <div id="waveContainer" class="hidden items-center gap-1 h-5 px-1 shrink-0">
-                <div class="wave-bar"></div>
-                <div class="wave-bar"></div>
-                <div class="wave-bar"></div>
-                <div class="wave-bar"></div>
+          <!-- Live Transcript & Custom Sentence Test Box -->
+          <div id="voiceFeedbackBox" class="rounded-2xl bg-white/90 border border-[#E6E1D8] p-3.5 space-y-2.5">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <div class="flex items-center gap-2 min-w-0">
+                <div id="waveContainer" class="hidden items-center gap-1 h-5 px-1 shrink-0">
+                  <div class="wave-bar"></div>
+                  <div class="wave-bar"></div>
+                  <div class="wave-bar"></div>
+                  <div class="wave-bar"></div>
+                </div>
+                <p id="transcriptText" class="text-xs font-semibold text-[#1C1917]">
+                  準備就緒：點擊上方圓形麥克風按鈕即可開始說話
+                </p>
               </div>
-              <p id="transcriptText" class="text-xs font-semibold text-[var(--foreground)]">
-                準備就緒：請點擊上方藍色大圓鈕，對著麥克風說出消費內容
-              </p>
+              <label class="flex items-center gap-1.5 text-xs text-[#57534E] shrink-0 cursor-pointer select-none">
+                <input id="autoSaveToggle" type="checkbox" checked class="accent-[#0F766E] rounded cursor-pointer" />
+                <span>辨識後自動存入</span>
+              </label>
             </div>
-            <label class="flex items-center gap-1 text-xs text-[var(--muted-foreground)] shrink-0 cursor-pointer select-none">
-              <input id="autoSaveToggle" type="checkbox" checked class="rounded border-[var(--border)] cursor-pointer" />
-              <span>辨識後自動存入明細</span>
-            </label>
+
+            <!-- Interactive Spoken Sentence Tester -->
+            <div class="flex items-center gap-2 pt-1">
+              <input
+                id="customVoiceInput"
+                type="text"
+                placeholder="或手動輸入語句測試解析：例如「昨天在全聯買牛奶 185 元」"
+                class="field-input flex-1 rounded-xl px-3 py-2 text-xs placeholder:text-[#8A847C]"
+              />
+              <button
+                id="runCustomVoiceBtn"
+                type="button"
+                class="px-3 py-2 rounded-xl bg-[#EFECE6] hover:bg-[#E5E0D5] text-[#1C1917] text-xs font-semibold active:scale-95 transition cursor-pointer shrink-0"
+              >
+                測試解析
+              </button>
+            </div>
+            <p id="parseHintText" class="text-xs text-[#0F766E] font-medium empty:hidden"></p>
+          </div>
+        </div>
+
+        <!-- 4-Field Expense Form -->
+        <form id="expenseForm" class="space-y-4">
+          <input type="hidden" id="editingId" value="" />
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- 1. Date -->
+            <div class="rounded-2xl border border-[#E6E1D8] bg-[#FAF8F4]/60 p-3">
+              <div class="flex items-center justify-between mb-1.5 min-h-[30px]">
+                <label for="dateInput" class="text-xs font-semibold text-[#57534E]">1. 消費日期</label>
+                <span class="text-[11px] text-[#8A847C]">自動帶入今日</span>
+              </div>
+              <input
+                id="dateInput"
+                type="date"
+                required
+                class="field-input w-full rounded-xl px-3 py-2 text-sm font-medium"
+              />
+            </div>
+
+            <!-- 2. Location -->
+            <div class="rounded-2xl border border-[#E6E1D8] bg-[#FAF8F4]/60 p-3">
+              <div class="flex items-center justify-between mb-1.5 min-h-[30px]">
+                <label for="locationInput" class="text-xs font-semibold text-[#57534E]">2. 消費地點 / 商店</label>
+                <button type="button" data-field="location" title="單獨語音輸入消費地點" class="field-mic-btn w-8 h-8 rounded-full bg-[#ECFDF5] text-[#0F766E] border border-[#A7F3D0] hover:bg-[#0F766E] hover:text-white active:scale-95 transition flex items-center justify-center cursor-pointer shadow-2xs">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" x2="12" y1="19" y2="22"/>
+                  </svg>
+                </button>
+              </div>
+              <input
+                id="locationInput"
+                type="text"
+                required
+                placeholder="例如：星巴克、全聯、好市多"
+                class="field-input w-full rounded-xl px-3 py-2 text-sm placeholder:text-[#8A847C]"
+              />
+            </div>
+
+            <!-- 3. Item -->
+            <div class="rounded-2xl border border-[#E6E1D8] bg-[#FAF8F4]/60 p-3">
+              <div class="flex items-center justify-between mb-1.5 min-h-[30px]">
+                <label for="itemInput" class="text-xs font-semibold text-[#57534E]">3. 消費項目 / 明細</label>
+                <button type="button" data-field="item" title="單獨語音輸入消費項目" class="field-mic-btn w-8 h-8 rounded-full bg-[#ECFDF5] text-[#0F766E] border border-[#A7F3D0] hover:bg-[#0F766E] hover:text-white active:scale-95 transition flex items-center justify-center cursor-pointer shadow-2xs">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" x2="12" y1="19" y2="22"/>
+                  </svg>
+                </button>
+              </div>
+              <input
+                id="itemInput"
+                type="text"
+                required
+                placeholder="例如：冰拿鐵、家庭日用品"
+                class="field-input w-full rounded-xl px-3 py-2 text-sm placeholder:text-[#8A847C]"
+              />
+            </div>
+
+            <!-- 4. Amount -->
+            <div class="rounded-2xl border border-[#E6E1D8] bg-[#FAF8F4]/60 p-3">
+              <div class="flex items-center justify-between mb-1.5 min-h-[30px]">
+                <label for="amountInput" class="text-xs font-semibold text-[#57534E]">4. 刷卡金額 (NT$)</label>
+                <button type="button" data-field="amount" title="單獨語音輸入金額" class="field-mic-btn w-8 h-8 rounded-full bg-[#ECFDF5] text-[#0F766E] border border-[#A7F3D0] hover:bg-[#0F766E] hover:text-white active:scale-95 transition flex items-center justify-center cursor-pointer shadow-2xs">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" x2="12" y1="19" y2="22"/>
+                  </svg>
+                </button>
+              </div>
+              <input
+                id="amountInput"
+                type="number"
+                min="1"
+                step="1"
+                required
+                placeholder="185"
+                class="field-input font-num w-full rounded-xl px-3 py-2 text-sm font-bold placeholder:text-[#8A847C]"
+              />
+            </div>
           </div>
 
-          <!-- Interactive Spoken Sentence Tester -->
-          <div class="flex items-center gap-1.5">
-            <input
-              id="customVoiceInput"
-              type="text"
-              placeholder="或直接輸入句子測試斷詞解析：例如「昨天在全聯買牛奶 185 元」"
-              class="flex-1 rounded-lg border border-[var(--border)] bg-[var(--card)] px-2.5 py-1.5 text-xs text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-            />
-            <button
-              id="runCustomVoiceBtn"
-              type="button"
-              class="px-2.5 py-1.5 rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)] text-xs font-semibold hover:opacity-85 active:scale-95 transition cursor-pointer shrink-0"
-            >
-              測試語音解析
-            </button>
+          <!-- Quick Merchant Chips + Submit Button -->
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="text-xs font-medium text-[#8A847C]">常用商店：</span>
+              <button type="button" data-quick-loc="7-11" class="quick-loc-chip text-xs font-medium px-2.5 py-1 rounded-full border border-[#E6E1D8] bg-[#FAF8F4] text-[#57534E] hover:border-[#0F766E] hover:text-[#0F766E] active:scale-95 transition cursor-pointer">7-11</button>
+              <button type="button" data-quick-loc="全聯" class="quick-loc-chip text-xs font-medium px-2.5 py-1 rounded-full border border-[#E6E1D8] bg-[#FAF8F4] text-[#57534E] hover:border-[#0F766E] hover:text-[#0F766E] active:scale-95 transition cursor-pointer">全聯</button>
+              <button type="button" data-quick-loc="星巴克" class="quick-loc-chip text-xs font-medium px-2.5 py-1 rounded-full border border-[#E6E1D8] bg-[#FAF8F4] text-[#57534E] hover:border-[#0F766E] hover:text-[#0F766E] active:scale-95 transition cursor-pointer">星巴克</button>
+              <button type="button" data-quick-loc="好市多" class="quick-loc-chip text-xs font-medium px-2.5 py-1 rounded-full border border-[#E6E1D8] bg-[#FAF8F4] text-[#57534E] hover:border-[#0F766E] hover:text-[#0F766E] active:scale-95 transition cursor-pointer">好市多</button>
+              <button type="button" data-quick-loc="Uber Eats" class="quick-loc-chip text-xs font-medium px-2.5 py-1 rounded-full border border-[#E6E1D8] bg-[#FAF8F4] text-[#57534E] hover:border-[#0F766E] hover:text-[#0F766E] active:scale-95 transition cursor-pointer">Uber Eats</button>
+            </div>
+
+            <div class="flex items-center gap-2 ml-auto">
+              <button id="cancelEditBtn" type="button" class="hidden px-3.5 py-2.5 rounded-2xl border border-[#D5CFC4] text-xs font-semibold text-[#57534E] hover:bg-[#FAF8F4] cursor-pointer">
+                取消修改
+              </button>
+              <button id="submitBtn" type="submit" class="px-5 py-2.5 rounded-2xl bg-[#0F766E] hover:bg-[#115E59] text-white text-xs sm:text-sm font-semibold shadow-sm active:scale-95 transition cursor-pointer">
+                ＋ 新增刷卡紀錄
+              </button>
+            </div>
           </div>
-          <p id="parseHintText" class="text-xs text-[var(--muted-foreground)]"></p>
+        </form>
+
+        <!-- Recent Records Preview inside Entry View -->
+        <div class="pt-4 border-t border-[#E6E1D8] space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-[#57534E]">最近刷卡紀錄</span>
+            <button id="viewAllLink" type="button" class="text-xs text-[#0F766E] font-semibold hover:underline cursor-pointer">查看全部明細 →</button>
+          </div>
+          <div id="recentPreviewList" class="space-y-2"></div>
         </div>
       </div>
 
-      <!-- 4-Field Compact Form -->
-      <form id="expenseForm" class="space-y-3">
-        <input type="hidden" id="editingId" value="" />
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-          <!-- 1. Date -->
-          <div>
-            <div class="flex items-center justify-between mb-1 min-h-[28px]">
-              <label for="dateInput" class="block text-xs font-medium text-[var(--muted-foreground)]">1. 日期</label>
-            </div>
-            <input
-              id="dateInput"
-              type="date"
-              required
-              class="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-2.5 py-1.5 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-            />
-          </div>
-
-          <!-- 2. Location -->
-          <div>
-            <div class="flex items-center justify-between mb-1 min-h-[28px]">
-              <label for="locationInput" class="text-xs font-medium text-[var(--muted-foreground)]">2. 消費地點</label>
-              <button type="button" data-field="location" title="語音輸入消費地點" class="field-mic-btn w-7 h-7 rounded-full bg-blue-50 text-[var(--primary)] border border-blue-200 hover:bg-[var(--primary)] hover:text-white active:scale-95 transition flex items-center justify-center cursor-pointer shadow-xs">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                  <line x1="12" x2="12" y1="19" y2="22"/>
-                </svg>
-              </button>
-            </div>
-            <input
-              id="locationInput"
-              type="text"
-              required
-              placeholder="星巴克、全聯"
-              class="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-2.5 py-1.5 text-xs text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-            />
-          </div>
-
-          <!-- 3. Item -->
-          <div>
-            <div class="flex items-center justify-between mb-1 min-h-[28px]">
-              <label for="itemInput" class="text-xs font-medium text-[var(--muted-foreground)]">3. 消費項目</label>
-              <button type="button" data-field="item" title="語音輸入消費項目" class="field-mic-btn w-7 h-7 rounded-full bg-blue-50 text-[var(--primary)] border border-blue-200 hover:bg-[var(--primary)] hover:text-white active:scale-95 transition flex items-center justify-center cursor-pointer shadow-xs">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                  <line x1="12" x2="12" y1="19" y2="22"/>
-                </svg>
-              </button>
-            </div>
-            <input
-              id="itemInput"
-              type="text"
-              required
-              placeholder="拿鐵、日用品"
-              class="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-2.5 py-1.5 text-xs text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-            />
-          </div>
-
-          <!-- 4. Amount -->
-          <div>
-            <div class="flex items-center justify-between mb-1 min-h-[28px]">
-              <label for="amountInput" class="text-xs font-medium text-[var(--muted-foreground)]">4. 金額 (NT$)</label>
-              <button type="button" data-field="amount" title="語音輸入金額" class="field-mic-btn w-7 h-7 rounded-full bg-blue-50 text-[var(--primary)] border border-blue-200 hover:bg-[var(--primary)] hover:text-white active:scale-95 transition flex items-center justify-center cursor-pointer shadow-xs">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                  <line x1="12" x2="12" y1="19" y2="22"/>
-                </svg>
-              </button>
-            </div>
-            <input
-              id="amountInput"
-              type="number"
-              min="1"
-              step="1"
-              required
-              placeholder="185"
-              class="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-2.5 py-1.5 text-xs font-semibold tabular-nums text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-            />
-          </div>
-        </div>
-
-        <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
-          <div class="flex items-center gap-1 flex-wrap">
-            <span class="text-xs text-[var(--muted-foreground)]">快選地點：</span>
-            <button type="button" data-quick-loc="7-11" class="quick-loc-chip text-xs px-2 py-0.5 rounded-lg border border-[var(--border)] bg-[var(--background)] hover:opacity-80 active:scale-95 cursor-pointer">7-11</button>
-            <button type="button" data-quick-loc="全聯" class="quick-loc-chip text-xs px-2 py-0.5 rounded-lg border border-[var(--border)] bg-[var(--background)] hover:opacity-80 active:scale-95 cursor-pointer">全聯</button>
-            <button type="button" data-quick-loc="星巴克" class="quick-loc-chip text-xs px-2 py-0.5 rounded-lg border border-[var(--border)] bg-[var(--background)] hover:opacity-80 active:scale-95 cursor-pointer">星巴克</button>
-            <button type="button" data-quick-loc="好市多" class="quick-loc-chip text-xs px-2 py-0.5 rounded-lg border border-[var(--border)] bg-[var(--background)] hover:opacity-80 active:scale-95 cursor-pointer">好市多</button>
-            <button type="button" data-quick-loc="Uber Eats" class="quick-loc-chip text-xs px-2 py-0.5 rounded-lg border border-[var(--border)] bg-[var(--background)] hover:opacity-80 active:scale-95 cursor-pointer">Uber Eats</button>
-          </div>
-
+      <!-- TAB 2: Full Records Table & Filter -->
+      <div id="viewList" class="hidden space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2.5">
           <div class="flex items-center gap-2">
-            <button id="cancelEditBtn" type="button" class="hidden px-3 py-1.5 rounded-xl border border-[var(--border)] text-xs font-medium text-[var(--muted-foreground)] cursor-pointer">
-              取消修改
-            </button>
-            <button id="submitBtn" type="submit" class="px-4 py-1.5 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] text-xs font-semibold shadow-sm hover:opacity-95 active:scale-95 transition cursor-pointer">
-              ＋ 新增刷卡紀錄
-            </button>
+            <input id="filterDateInput" type="date" class="field-input rounded-xl px-3 py-1.5 text-xs font-medium" />
+            <button id="clearFilterBtn" type="button" class="hidden text-xs font-semibold text-[#0F766E] hover:underline cursor-pointer">顯示全部日期</button>
           </div>
+          <input id="searchInput" type="search" placeholder="搜尋商店、項目或金額..." class="field-input rounded-xl px-3 py-1.5 text-xs w-full sm:w-56 placeholder:text-[#8A847C]" />
         </div>
-      </form>
 
-      <!-- Recent Records Preview inside Entry View -->
-      <div class="pt-2 border-t border-[var(--border)]">
-        <div class="flex items-center justify-between mb-1.5">
-          <span class="text-xs font-semibold text-[var(--muted-foreground)]">最新刷卡紀錄（可直接點擊編輯或刪除）</span>
-          <button id="viewAllLink" type="button" class="text-xs text-[var(--primary)] font-medium hover:underline cursor-pointer">查看全部明細 →</button>
+        <div class="overflow-x-auto max-h-96 overflow-y-auto rounded-2xl border border-[#E6E1D8]">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-[#E6E1D8] bg-[#FAF8F4] text-xs text-[#8A847C]">
+                <th class="py-2.5 px-3 font-semibold">日期</th>
+                <th class="py-2.5 px-3 font-semibold">消費地點</th>
+                <th class="py-2.5 px-3 font-semibold">消費項目</th>
+                <th class="py-2.5 px-3 font-semibold text-right">金額</th>
+                <th class="py-2.5 px-3 font-semibold text-right">操作</th>
+              </tr>
+            </thead>
+            <tbody id="recordsTableBody" class="divide-y divide-[#E6E1D8] text-xs bg-white"></tbody>
+          </table>
         </div>
-        <div id="recentPreviewList" class="space-y-1.5"></div>
+
+        <div id="emptyState" class="hidden py-8 text-center text-xs text-[#8A847C]">
+          尚無符合條件的刷卡紀錄
+        </div>
       </div>
+
     </div>
-
-    <!-- TAB 2: Full Records Table & Filter -->
-    <div id="viewList" class="hidden space-y-3">
-      <div class="flex flex-wrap items-center justify-between gap-2">
-        <div class="flex items-center gap-2">
-          <input id="filterDateInput" type="date" class="rounded-lg border border-[var(--border)] bg-[var(--background)] px-2.5 py-1 text-xs text-[var(--foreground)]" />
-          <button id="clearFilterBtn" type="button" class="hidden text-xs text-[var(--primary)] hover:underline cursor-pointer">全部日期</button>
-        </div>
-        <input id="searchInput" type="search" placeholder="搜尋商店或項目..." class="rounded-lg border border-[var(--border)] bg-[var(--background)] px-2.5 py-1 text-xs text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]" />
-      </div>
-
-      <div class="overflow-x-auto max-h-80 overflow-y-auto">
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="border-b border-[var(--border)] text-xs text-[var(--muted-foreground)]">
-              <th class="py-2 px-2 font-medium">日期</th>
-              <th class="py-2 px-2 font-medium">消費地點</th>
-              <th class="py-2 px-2 font-medium">消費項目</th>
-              <th class="py-2 px-2 font-medium text-right">金額</th>
-              <th class="py-2 px-2 font-medium text-right">操作</th>
-            </tr>
-          </thead>
-          <tbody id="recordsTableBody" class="divide-y divide-[var(--border)] text-xs"></tbody>
-        </table>
-      </div>
-
-      <div id="emptyState" class="hidden py-6 text-center text-xs text-[var(--muted-foreground)]">
-        尚無符合的刷卡紀錄
-      </div>
-    </div>
-
-  </div>
+  </main>
 
   <script>
     const STORAGE_KEY = 'cc_voice_records_v1';
@@ -490,13 +609,13 @@
       if (tab === 'entry') {
         viewEntry.classList.remove('hidden');
         viewList.classList.add('hidden');
-        tabBtnEntry.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--primary)] text-[var(--primary-foreground)] transition cursor-pointer';
-        tabBtnList.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-85 transition cursor-pointer';
+        tabBtnEntry.className = 'px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white text-[#1C1917] shadow-xs transition cursor-pointer';
+        tabBtnList.className = 'px-3.5 py-1.5 rounded-xl text-xs font-medium text-[#57534E] hover:text-[#1C1917] transition cursor-pointer';
       } else {
         viewEntry.classList.add('hidden');
         viewList.classList.remove('hidden');
-        tabBtnList.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--primary)] text-[var(--primary-foreground)] transition cursor-pointer';
-        tabBtnEntry.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-85 transition cursor-pointer';
+        tabBtnList.className = 'px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white text-[#1C1917] shadow-xs transition cursor-pointer';
+        tabBtnEntry.className = 'px-3.5 py-1.5 rounded-xl text-xs font-medium text-[#57534E] hover:text-[#1C1917] transition cursor-pointer';
       }
     }
 
@@ -598,17 +717,16 @@
       if (parsed.item) { itemInput.value = parsed.item; flashElement(itemInput); }
       if (parsed.amount !== null && !isNaN(parsed.amount)) { amountInput.value = parsed.amount; flashElement(amountInput); }
 
-      parseHintText.textContent = `解析結果 → 日期：${parsed.date} ｜ 地點：${parsed.location || '待補充'} ｜ 項目：${parsed.item || '待補充'} ｜ 金額：${parsed.amount ? 'NT$ ' + parsed.amount : '待補充'}`;
+      parseHintText.textContent = `✓ 解析結果：${parsed.date} ｜ ${parsed.location || '待補充地點'} ｜ ${parsed.item || '待補充項目'} ｜ ${parsed.amount ? 'NT$ ' + parsed.amount : '待補充金額'}`;
 
       if (autoSaveToggle.checked && parsed.location && parsed.item && parsed.amount && !editingIdInput.value) {
         saveFormRecord(true);
-        showToast('已語音辨識並自動新增紀錄！');
+        showToast('已語音辨識並自動存入！');
       } else {
         showToast('已帶入語音辨識欄位！');
       }
     }
 
-    // Separate Demo Voice Function (ONLY triggered when clicking the Demo button)
     const DEMO_PHRASES = [
       '今天在星巴克買冰拿鐵與可頌花了 235 元',
       '今天在好市多買牛排與鮮奶一共 1680 元',
@@ -623,7 +741,7 @@
       waveContainer.classList.remove('hidden');
       waveContainer.classList.add('flex');
       transcriptText.textContent = `模擬語音輸入中：「${phrase}」...`;
-      parseHintText.textContent = '正在示範語音自動拆解為 4 個欄位...';
+      parseHintText.textContent = '正在示範將整句語音拆解為 4 個欄位...';
 
       setTimeout(() => {
         waveContainer.classList.add('hidden');
@@ -635,7 +753,7 @@
 
     demoVoiceBtn.addEventListener('click', runDemoVoice);
 
-    // Real Microphone Speech Recognition with continuous listening & silence detection
+    // Real Microphone Speech Recognition
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition = null;
     let isListening = false;
@@ -656,14 +774,12 @@
       if (listening) {
         waveContainer.classList.remove('hidden');
         waveContainer.classList.add('flex');
-        mainMicBtn.classList.remove('bg-[var(--primary)]', 'hover:bg-blue-700', 'ring-blue-100', 'shadow-blue-600/25');
-        mainMicBtn.classList.add('recording-ring', 'bg-red-600', 'hover:bg-red-700', 'ring-red-100', 'shadow-red-600/25');
+        mainMicBtn.classList.add('recording-state');
         mainMicLabel.textContent = '點擊完成';
       } else {
         waveContainer.classList.add('hidden');
         waveContainer.classList.remove('flex');
-        mainMicBtn.classList.remove('recording-ring', 'bg-red-600', 'hover:bg-red-700', 'ring-red-100', 'shadow-red-600/25');
-        mainMicBtn.classList.add('bg-[var(--primary)]', 'hover:bg-blue-700', 'ring-blue-100', 'shadow-blue-600/25');
+        mainMicBtn.classList.remove('recording-state');
         mainMicLabel.textContent = '點擊說話';
       }
     }
@@ -738,7 +854,6 @@
             transcriptText.textContent = `🎙️ 正在聽您說：「${latestCombinedSpeech}」...`;
             parseHintText.textContent = '繼續說話，或停頓 3 秒自動完成（也可直接點紅色大圓鈕完成）';
 
-            // Only start the 3-second auto-finish timer AFTER the user has actually spoken!
             clearSilenceTimer();
             silenceTimer = setTimeout(() => {
               if (isListening && latestCombinedSpeech.trim().length > 0) {
@@ -751,7 +866,6 @@
         recognition.onerror = (event) => {
           const err = event && event.error ? event.error : '';
           if (err === 'no-speech') {
-            // Do NOT cut off if the user hasn't started speaking yet!
             return;
           }
           if (err === 'not-allowed' || err === 'service-not-allowed') {
@@ -760,12 +874,11 @@
             isListening = false;
             updateMicUiListening(false);
             transcriptText.textContent = '⚠️ 無法啟動實體麥克風（權限被瀏覽器或預覽視窗攔截）';
-            showBanner('⚠️ 目前視窗無法取得麥克風權限。若您正在對話預覽框中，因安全沙盒限制無法開啟實體麥克風，請使用獨立瀏覽器分頁開啟此網頁並允許麥克風權限，或點擊「模擬語音示範」測試。');
+            showBanner('⚠️ 目前視窗無法取得麥克風權限。請確認瀏覽器已允許麥克風權限，或點擊「模擬語音示範」測試。');
           }
         };
 
         recognition.onend = () => {
-          // If the user hasn't clicked stop and hasn't finished speaking, keep the mic alive!
           if (isListening && !manualStopRequested) {
             try {
               recognition.start();
@@ -941,18 +1054,26 @@
 
       recentPreviewList.innerHTML = '';
       records.slice(0, 3).forEach((rec) => {
+        const initial = (rec.location || '刷').trim().charAt(0);
         const row = document.createElement('div');
-        row.className = 'flex items-center justify-between text-xs py-1.5 px-2.5 rounded-lg bg-[var(--background)] border border-[var(--border)]';
+        row.className = 'flex items-center justify-between gap-3 py-2.5 px-3.5 rounded-2xl bg-[#FAF8F4] border border-[#E6E1D8] hover:border-[#D5CFC4] transition';
         row.innerHTML = `
-          <div class="flex items-center gap-2 min-w-0">
-            <span class="text-[var(--muted-foreground)] tabular-nums shrink-0">${rec.date.slice(5)}</span>
-            <span class="font-semibold text-[var(--foreground)] shrink-0">${escapeHtml(rec.location)}</span>
-            <span class="text-[var(--muted-foreground)] truncate">${escapeHtml(rec.item)}</span>
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-[#ECFDF5] text-[#0F766E] border border-[#A7F3D0]/80 flex items-center justify-center text-xs font-bold shrink-0">
+              ${escapeHtml(initial)}
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="text-xs sm:text-sm font-bold text-[#1C1917] truncate">${escapeHtml(rec.location)}</span>
+                <span class="font-num text-[11px] text-[#8A847C] shrink-0">${rec.date.slice(5)}</span>
+              </div>
+              <p class="text-xs text-[#57534E] truncate">${escapeHtml(rec.item)}</p>
+            </div>
           </div>
-          <div class="flex items-center gap-2 shrink-0 ml-2">
-            <span class="font-bold tabular-nums text-[var(--foreground)]">${formatCurrency(rec.amount)}</span>
-            <button type="button" data-edit="${rec.id}" class="text-[var(--primary)] hover:underline cursor-pointer">編輯</button>
-            <button type="button" data-del="${rec.id}" class="text-red-500 hover:underline cursor-pointer">刪除</button>
+          <div class="flex items-center gap-2.5 shrink-0">
+            <span class="font-num text-xs sm:text-sm font-bold text-[#1C1917]">${formatCurrency(rec.amount)}</span>
+            <button type="button" data-edit="${rec.id}" class="text-xs font-medium text-[#0F766E] hover:underline cursor-pointer">編輯</button>
+            <button type="button" data-del="${rec.id}" class="text-xs font-medium text-[#E11D48] hover:underline cursor-pointer">刪除</button>
           </div>
         `;
         recentPreviewList.appendChild(row);
@@ -983,14 +1104,15 @@
 
       filtered.forEach((rec) => {
         const tr = document.createElement('tr');
+        tr.className = 'hover:bg-[#FAF8F4] transition';
         tr.innerHTML = `
-          <td class="py-2 px-2 whitespace-nowrap tabular-nums text-[var(--muted-foreground)]">${rec.date}</td>
-          <td class="py-2 px-2 font-semibold text-[var(--foreground)]">${escapeHtml(rec.location)}</td>
-          <td class="py-2 px-2 text-[var(--foreground)]">${escapeHtml(rec.item)}</td>
-          <td class="py-2 px-2 text-right font-semibold tabular-nums text-[var(--foreground)]">${formatCurrency(rec.amount)}</td>
-          <td class="py-2 px-2 text-right whitespace-nowrap">
-            <button type="button" data-edit="${rec.id}" class="text-[var(--primary)] hover:underline mr-2 cursor-pointer">編輯</button>
-            <button type="button" data-del="${rec.id}" class="text-red-500 hover:underline cursor-pointer">刪除</button>
+          <td class="py-2.5 px-3 whitespace-nowrap font-num text-[#8A847C]">${rec.date}</td>
+          <td class="py-2.5 px-3 font-semibold text-[#1C1917]">${escapeHtml(rec.location)}</td>
+          <td class="py-2.5 px-3 text-[#57534E]">${escapeHtml(rec.item)}</td>
+          <td class="py-2.5 px-3 text-right font-num font-bold text-[#1C1917]">${formatCurrency(rec.amount)}</td>
+          <td class="py-2.5 px-3 text-right whitespace-nowrap">
+            <button type="button" data-edit="${rec.id}" class="text-[#0F766E] font-medium hover:underline mr-2.5 cursor-pointer">編輯</button>
+            <button type="button" data-del="${rec.id}" class="text-[#E11D48] font-medium hover:underline cursor-pointer">刪除</button>
           </td>
         `;
         recordsTableBody.appendChild(tr);
