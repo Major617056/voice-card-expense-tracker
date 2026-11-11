@@ -647,7 +647,7 @@
                 <th class="py-2.5 px-3 font-semibold">日期</th>
                 <th class="py-2.5 px-3 font-semibold">消費地點</th>
                 <th class="py-2.5 px-3 font-semibold">消費項目</th>
-                <th class="py-2.5 px-3 font-semibold text-center">繳款狀態</th>
+                <th class="py-2.5 px-3 font-semibold text-center">繳款選擇</th>
                 <th class="py-2.5 px-3 font-semibold text-right">金額</th>
                 <th class="py-2.5 px-3 font-semibold text-right">操作</th>
               </tr>
@@ -676,6 +676,70 @@
         <button id="dismissUndoBtn" type="button" class="text-xs text-[#A8A29E] hover:text-white px-1 cursor-pointer">
           ✕
         </button>
+      </div>
+    </div>
+
+    <!-- Save Success Confirmation Modal -->
+    <div id="saveSuccessModal" class="hidden fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-[2px] flex items-center justify-center p-4">
+      <div class="w-full max-w-sm rounded-3xl bg-white border border-[#A7F3D0] p-6 shadow-2xl space-y-4 text-center">
+        <!-- Big Checkmark -->
+        <div class="mx-auto w-16 h-16 rounded-3xl bg-[#ECFDF5] border border-[#A7F3D0] flex items-center justify-center text-[#0F766E] shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+
+        <div class="space-y-1">
+          <h2 class="text-lg font-bold text-[#1C1917]">🎉 記帳成功！已存入列表</h2>
+          <p id="successModalSubtitle" class="text-xs text-[#57534E]">
+            刷卡資料已成功記錄並更新待繳統計
+          </p>
+        </div>
+
+        <!-- Receipt Card Preview -->
+        <div class="rounded-2xl bg-[#FAF8F4] border border-[#E6E1D8] p-4 text-left space-y-2.5 shadow-2xs">
+          <div class="flex items-center justify-between border-b border-[#E6E1D8] pb-2">
+            <span class="text-xs text-[#8A847C]">📅 消費日期</span>
+            <span id="successModalDate" class="font-num text-xs font-bold text-[#1C1917]">2026-11-11</span>
+          </div>
+          <div class="flex items-center justify-between border-b border-[#E6E1D8] pb-2">
+            <span class="text-xs text-[#8A847C]">🏪 消費地點</span>
+            <span id="successModalLocation" class="text-xs font-bold text-[#1C1917] truncate max-w-[180px]">全聯福利中心</span>
+          </div>
+          <div class="flex items-center justify-between border-b border-[#E6E1D8] pb-2">
+            <span class="text-xs text-[#8A847C]">🏷️ 消費項目</span>
+            <span id="successModalItem" class="text-xs font-bold text-[#57534E] truncate max-w-[180px]">鮮奶與雞蛋</span>
+          </div>
+          <div class="flex items-center justify-between border-b border-[#E6E1D8] pb-2">
+            <span class="text-xs text-[#8A847C]">💳 繳款狀態</span>
+            <span id="successModalPaidBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-300">⏳ 待繳款 (未結清)</span>
+          </div>
+          <div class="flex items-center justify-between pt-1">
+            <span class="text-xs font-bold text-[#0F766E]">💰 刷卡金額</span>
+            <span id="successModalAmount" class="font-num text-2xl font-black text-[#0F766E]">NT$ 0</span>
+          </div>
+        </div>
+
+        <!-- Quick Payment Toggle button in Modal -->
+        <div class="pt-0.5">
+          <button id="successModalTogglePaidBtn" type="button" class="text-xs font-semibold text-[#0F766E] hover:underline cursor-pointer">
+            這筆已經繳款了嗎？點此切換為「✓ 已繳款」
+          </button>
+        </div>
+
+        <!-- Actions -->
+        <div class="space-y-2 pt-1">
+          <button id="successModalOkBtn" type="button" class="w-full py-3 px-4 rounded-2xl bg-[#0F766E] hover:bg-[#115E59] text-white text-xs sm:text-sm font-bold shadow-sm transition active:scale-95 cursor-pointer">
+            ✓ 好的，繼續記帳
+          </button>
+          <button id="successModalViewListBtn" type="button" class="w-full py-2.5 px-4 rounded-2xl border border-[#E6E1D8] bg-white hover:bg-[#FAF8F4] text-xs font-semibold text-[#57534E] hover:text-[#1C1917] transition cursor-pointer">
+            📋 前往查看「消費明細」列表 →
+          </button>
+        </div>
+
+        <p class="text-[11px] text-[#8A847C]">
+          提示：隨時可在列表中直接點選切換「已繳款」或「刪除」
+        </p>
       </div>
     </div>
 
@@ -778,6 +842,16 @@
     const clearFilterBtn = document.getElementById('clearFilterBtn');
     const searchInput = document.getElementById('searchInput');
     const exportCsvBtn = document.getElementById('exportCsvBtn');
+    const saveSuccessModal = document.getElementById('saveSuccessModal');
+    const successModalSubtitle = document.getElementById('successModalSubtitle');
+    const successModalDate = document.getElementById('successModalDate');
+    const successModalLocation = document.getElementById('successModalLocation');
+    const successModalItem = document.getElementById('successModalItem');
+    const successModalAmount = document.getElementById('successModalAmount');
+    const successModalPaidBadge = document.getElementById('successModalPaidBadge');
+    const successModalTogglePaidBtn = document.getElementById('successModalTogglePaidBtn');
+    const successModalOkBtn = document.getElementById('successModalOkBtn');
+    const successModalViewListBtn = document.getElementById('successModalViewListBtn');
 
     let currentPaidFilter = 'all';
 
@@ -963,10 +1037,10 @@
       parseHintText.textContent = `✓ 解析結果：${parsed.date} ｜ ${parsed.location || '待補充地點'} ｜ ${parsed.item || '待補充項目'} ｜ ${parsed.amount ? 'NT$ ' + parsed.amount : '待補充金額'}`;
 
       if (autoSaveToggle.checked && parsed.location && parsed.item && parsed.amount && !editingIdInput.value) {
-        saveFormRecord(true);
-        showToast('已語音辨識並自動存入！');
+        saveFormRecord(true, { source: 'voice' });
       } else {
-        showToast('已帶入語音辨識欄位！');
+        showToast('已辨識帶入欄位！請確認後點擊「＋ 新增刷卡紀錄」存入');
+        flashElement(submitBtn);
       }
     }
 
@@ -1211,7 +1285,77 @@
       });
     });
 
-    function saveFormRecord(keepValuesBriefly = false) {
+    let lastSavedRecord = null;
+
+    function showSaveSuccessConfirmation(record, isVoice = false) {
+      if (!record || !saveSuccessModal) return;
+      lastSavedRecord = record;
+
+      if (successModalSubtitle) {
+        successModalSubtitle.textContent = isVoice
+          ? '🎙️ 語音辨識完成！已自動存入消費列表並更新待繳統計'
+          : '✓ 刷卡資料已成功記錄並更新待繳統計';
+      }
+
+      if (successModalDate) successModalDate.textContent = record.date;
+      if (successModalLocation) successModalLocation.textContent = record.location;
+      if (successModalItem) successModalItem.textContent = record.item;
+      if (successModalAmount) successModalAmount.textContent = formatCurrency(record.amount);
+
+      updateSuccessModalPaidBadge(record.paid);
+      saveSuccessModal.classList.remove('hidden');
+    }
+
+    function updateSuccessModalPaidBadge(isPaid) {
+      if (!successModalPaidBadge) return;
+      if (isPaid) {
+        successModalPaidBadge.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#ECFDF5] text-[#0F766E] border border-[#A7F3D0]';
+        successModalPaidBadge.textContent = '✓ 已繳款 (已結清)';
+        if (successModalTogglePaidBtn) successModalTogglePaidBtn.textContent = '想要改回待繳款嗎？點此設為「待繳款」';
+      } else {
+        successModalPaidBadge.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-300';
+        successModalPaidBadge.textContent = '⏳ 待繳款 (未結清)';
+        if (successModalTogglePaidBtn) successModalTogglePaidBtn.textContent = '這筆已經繳款了嗎？點此切換為「✓ 已繳款」';
+      }
+    }
+
+    function closeSaveSuccessModal() {
+      if (saveSuccessModal) saveSuccessModal.classList.add('hidden');
+    }
+
+    if (successModalOkBtn) {
+      successModalOkBtn.addEventListener('click', closeSaveSuccessModal);
+    }
+
+    if (successModalViewListBtn) {
+      successModalViewListBtn.addEventListener('click', () => {
+        closeSaveSuccessModal();
+        switchTab('list');
+        if (recordsTableBody && recordsTableBody.firstElementChild) {
+          flashElement(recordsTableBody.firstElementChild);
+        }
+      });
+    }
+
+    if (successModalTogglePaidBtn) {
+      successModalTogglePaidBtn.addEventListener('click', () => {
+        if (!lastSavedRecord) return;
+        toggleRecordPaid(lastSavedRecord.id);
+        const updated = records.find((r) => r.id === lastSavedRecord.id);
+        if (updated) {
+          lastSavedRecord = updated;
+          updateSuccessModalPaidBadge(updated.paid);
+        }
+      });
+    }
+
+    if (saveSuccessModal) {
+      saveSuccessModal.addEventListener('click', (e) => {
+        if (e.target === saveSuccessModal) closeSaveSuccessModal();
+      });
+    }
+
+    function saveFormRecord(keepValuesBriefly = false, options = {}) {
       const date = dateInput.value || getTodayStr(0);
       const location = locationInput.value.trim();
       const item = itemInput.value.trim();
@@ -1224,16 +1368,22 @@
       }
 
       const editingId = editingIdInput.value;
+      let targetRecord = null;
       if (editingId) {
-        records = records.map((r) => r.id === editingId ? { ...r, date, location, item, amount, paid } : r);
+        targetRecord = { id: editingId, date, location, item, amount, paid };
+        records = records.map((r) => r.id === editingId ? targetRecord : r);
         resetEditMode();
         showToast('已更新刷卡紀錄！');
       } else {
-        records.unshift({ id: 'rec-' + Date.now(), date, location, item, amount, paid });
+        targetRecord = { id: 'rec-' + Date.now(), date, location, item, amount, paid };
+        records.unshift(targetRecord);
         showToast('已新增刷卡紀錄！');
       }
       saveToStorage();
       renderRecords();
+
+      // Show the prominent confirmation screen
+      showSaveSuccessConfirmation(targetRecord, options.source === 'voice');
 
       if (!keepValuesBriefly) {
         locationInput.value = '';
@@ -1352,6 +1502,10 @@
     });
 
     document.addEventListener('keydown', (e) => {
+      if ((e.key === 'Escape' || e.key === 'Enter') && saveSuccessModal && !saveSuccessModal.classList.contains('hidden')) {
+        closeSaveSuccessModal();
+        return;
+      }
       if (e.key === 'Escape' && !deleteConfirmModal.classList.contains('hidden')) {
         closeDeleteModal();
       }
@@ -1436,9 +1590,9 @@
         const gmailTag = rec.source === 'gmail'
           ? '<span class="px-1.5 py-0.5 rounded-md bg-[#ECFDF5] text-[#0F766E] border border-[#A7F3D0] text-[10px] font-semibold shrink-0">📧 Gmail 補登</span>'
           : '';
-        const paidBtn = rec.paid
-          ? `<button type="button" data-toggle-paid="${rec.id}" title="已繳款（點擊可恢復為待繳款）" class="px-2 py-0.5 rounded-full bg-[#ECFDF5] text-[#0F766E] border border-[#A7F3D0] hover:bg-emerald-100 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition shrink-0"><span>✓ 已繳款</span></button>`
-          : `<button type="button" data-toggle-paid="${rec.id}" title="待繳款（點擊可標記為已繳款）" class="px-2 py-0.5 rounded-full bg-white text-[#78716C] border border-[#E6E1D8] hover:border-[#0F766E] hover:text-[#0F766E] text-[10px] font-medium flex items-center gap-1 cursor-pointer transition shrink-0"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span><span>待繳款</span></button>`;
+        const statusBadge = rec.paid
+          ? '<span class="px-1.5 py-0.5 rounded-md bg-[#ECFDF5] text-[#0F766E] border border-[#A7F3D0] text-[10px] font-bold shrink-0">已結清</span>'
+          : '<span class="px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-medium shrink-0">待繳</span>';
 
         const amountClass = rec.paid ? 'text-[#8A847C] line-through font-semibold' : 'text-[#1C1917] font-bold';
         const rowClass = rec.paid ? 'opacity-85 bg-[#FAF8F4]/60' : 'bg-[#FAF8F4]';
@@ -1454,15 +1608,18 @@
               <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="text-xs sm:text-sm font-bold text-[#1C1917] truncate">${escapeHtml(rec.location)}</span>
                 ${gmailTag}
-                ${paidBtn}
+                ${statusBadge}
                 <span class="font-num text-[11px] text-[#8A847C] shrink-0">${rec.date.slice(5)}</span>
               </div>
               <p class="text-xs text-[#57534E] truncate">${escapeHtml(rec.item)}</p>
             </div>
           </div>
-          <div class="flex items-center gap-2.5 shrink-0">
+          <div class="flex items-center gap-2 shrink-0">
             <span class="font-num text-xs sm:text-sm ${amountClass}">${formatCurrency(rec.amount)}</span>
-            <button type="button" data-edit="${rec.id}" class="text-xs font-medium text-[#0F766E] hover:underline cursor-pointer">編輯</button>
+            <button type="button" data-toggle-paid="${rec.id}" class="text-xs font-bold px-2 py-1 rounded-xl transition cursor-pointer flex items-center gap-1 shrink-0 ${rec.paid ? 'bg-white hover:bg-stone-100 text-[#57534E] border border-[#E6E1D8]' : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300'}">
+              ${rec.paid ? '改為待繳' : '✓ 設為已繳'}
+            </button>
+            <button type="button" data-edit="${rec.id}" class="text-xs font-medium text-[#57534E] hover:text-[#0F766E] hover:underline cursor-pointer">編輯</button>
             <button type="button" data-del="${rec.id}" class="text-xs font-medium text-[#E11D48] hover:underline cursor-pointer">刪除</button>
           </div>
         `;
@@ -1507,9 +1664,6 @@
         const gmailTag = rec.source === 'gmail'
           ? '<span class="ml-1.5 px-1.5 py-0.5 rounded-md bg-[#ECFDF5] text-[#0F766E] border border-[#A7F3D0] text-[10px] font-semibold">📧 Gmail 補登</span>'
           : '';
-        const paidBtn = rec.paid
-          ? `<button type="button" data-toggle-paid="${rec.id}" title="點擊切換為待繳款" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-[#ECFDF5] text-[#0F766E] border border-[#A7F3D0] hover:bg-emerald-100 cursor-pointer transition">✓ 已繳款</button>`
-          : `<button type="button" data-toggle-paid="${rec.id}" title="點擊標記為已繳款" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-[#FAF8F4] text-[#78716C] border border-[#E6E1D8] hover:border-[#0F766E] hover:text-[#0F766E] cursor-pointer transition"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>待繳款</button>`;
 
         const amountClass = rec.paid ? 'text-[#8A847C] line-through font-semibold' : 'text-[#1C1917] font-bold';
         const trClass = rec.paid ? 'bg-stone-50/60 hover:bg-[#FAF8F4]' : 'hover:bg-[#FAF8F4]';
@@ -1520,9 +1674,17 @@
           <td class="py-2.5 px-3 whitespace-nowrap font-num text-[#8A847C]">${rec.date}</td>
           <td class="py-2.5 px-3 font-semibold text-[#1C1917]">${escapeHtml(rec.location)}${gmailTag}</td>
           <td class="py-2.5 px-3 text-[#57534E]">${escapeHtml(rec.item)}</td>
-          <td class="py-2.5 px-3 text-center whitespace-nowrap">${paidBtn}</td>
+          <td class="py-2.5 px-3 text-center whitespace-nowrap">
+            <label class="inline-flex items-center gap-1.5 cursor-pointer select-none px-2.5 py-1 rounded-xl border transition ${rec.paid ? 'bg-[#ECFDF5] border-[#A7F3D0] text-[#0F766E]' : 'bg-[#FAF8F4] border-[#E6E1D8] text-[#78716C] hover:border-amber-400'}">
+              <input type="checkbox" data-checkbox-paid="${rec.id}" ${rec.paid ? 'checked' : ''} class="w-4 h-4 accent-[#0F766E] rounded cursor-pointer" />
+              <span class="text-xs font-bold">${rec.paid ? '✓ 已繳款' : '⏳ 待繳款'}</span>
+            </label>
+          </td>
           <td class="py-2.5 px-3 text-right font-num ${amountClass}">${formatCurrency(rec.amount)}</td>
           <td class="py-2.5 px-3 text-right whitespace-nowrap">
+            <button type="button" data-toggle-paid="${rec.id}" class="text-xs font-bold px-2.5 py-1 rounded-xl transition cursor-pointer mr-2 inline-flex items-center gap-1 ${rec.paid ? 'bg-white hover:bg-stone-100 text-[#57534E] border border-[#E6E1D8]' : 'bg-emerald-50 hover:bg-emerald-100 text-[#0F766E] border border-[#A7F3D0]'}">
+              ${rec.paid ? '改為待繳' : '✓ 設為已繳'}
+            </button>
             <button type="button" data-edit="${rec.id}" class="text-[#0F766E] font-medium hover:underline mr-2.5 cursor-pointer">編輯</button>
             <button type="button" data-del="${rec.id}" class="text-[#E11D48] font-medium hover:underline cursor-pointer">刪除</button>
           </td>
@@ -1530,6 +1692,12 @@
         recordsTableBody.appendChild(tr);
       });
 
+      recordsTableBody.querySelectorAll('[data-checkbox-paid]').forEach((cb) => {
+        cb.addEventListener('change', (e) => {
+          e.stopPropagation();
+          toggleRecordPaid(cb.getAttribute('data-checkbox-paid'));
+        });
+      });
       recordsTableBody.querySelectorAll('[data-toggle-paid]').forEach((btn) => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
