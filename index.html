@@ -239,19 +239,27 @@
       <!-- Summary Metrics Strip -->
       <section class="grid grid-cols-2 gap-3">
         <div class="rounded-2xl bg-[#FAF8F4] border border-[#E6E1D8] px-4 py-3 flex flex-col justify-between">
-          <span class="text-xs font-medium text-[#8A847C]">今日刷卡消費</span>
-          <div class="mt-1 flex items-baseline justify-between gap-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-[#8A847C]">今日待繳消費</span>
+            <span class="text-[10px] font-medium text-[#8A847C]">未結清</span>
+          </div>
+          <div class="mt-1">
             <span id="todayTotal" class="font-num text-lg sm:text-xl font-bold text-[#1C1917]">NT$ 0</span>
-            <span class="text-[11px] font-medium text-[#8A847C]">Today</span>
+            <p id="todayPaidSubText" class="text-[11px] font-medium text-[#8A847C] mt-0.5 truncate">尚無已繳紀錄</p>
           </div>
         </div>
         <div class="rounded-2xl bg-[#ECFDF5]/75 border border-[#A7F3D0] px-4 py-3 flex flex-col justify-between">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-[#0F766E]">累計消費總額</span>
-            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-white/90 text-[#0F766E] border border-[#A7F3D0]/60"><span id="totalCount" class="font-num">0</span> 筆紀錄</span>
+            <span class="text-xs font-semibold text-[#0F766E]">累計待繳總額</span>
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-white/90 text-[#0F766E] border border-[#A7F3D0]/60">
+              <span id="unpaidCount" class="font-num">0</span> 筆待繳
+            </span>
           </div>
           <div class="mt-1">
             <span id="grandTotal" class="font-num text-lg sm:text-xl font-bold text-[#0F766E]">NT$ 0</span>
+            <p class="text-[11px] text-[#0F766E]/80 mt-0.5 truncate">
+              已繳清 <span id="paidCount" class="font-num font-semibold">0</span> 筆 (NT$ <span id="paidTotalAmount" class="font-num">0</span>)
+            </p>
           </div>
         </div>
       </section>
@@ -575,6 +583,14 @@
             </div>
           </div>
 
+          <!-- Payment Status Checkbox -->
+          <div class="flex items-center justify-between px-1">
+            <label class="inline-flex items-center gap-2 cursor-pointer select-none text-xs text-[#57534E] hover:text-[#1C1917]">
+              <input id="paidCheckbox" type="checkbox" class="accent-[#0F766E] w-4 h-4 rounded cursor-pointer" />
+              <span>此筆已完成繳款（<strong class="text-[#0F766E]">已結清</strong>，不計入待繳統計）</span>
+            </label>
+          </div>
+
           <!-- Quick Merchant Chips + Submit Button -->
           <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
             <div class="flex items-center gap-1.5 flex-wrap">
@@ -610,9 +626,16 @@
       <!-- TAB 2: Full Records Table & Filter -->
       <div id="viewList" class="hidden space-y-4">
         <div class="flex flex-wrap items-center justify-between gap-2.5">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
             <input id="filterDateInput" type="date" class="field-input rounded-xl px-3 py-1.5 text-xs font-medium" />
             <button id="clearFilterBtn" type="button" class="hidden text-xs font-semibold text-[#0F766E] hover:underline cursor-pointer">顯示全部日期</button>
+
+            <!-- Payment status filter pills -->
+            <div class="inline-flex rounded-xl p-0.5 bg-[#FAF8F4] border border-[#E6E1D8] text-xs">
+              <button id="filterPaidAll" type="button" class="paid-filter-btn px-2.5 py-1 rounded-lg font-semibold transition cursor-pointer bg-white text-[#0F766E] shadow-2xs" data-status="all">全部</button>
+              <button id="filterPaidUnpaid" type="button" class="paid-filter-btn px-2.5 py-1 rounded-lg font-medium transition cursor-pointer text-[#57534E] hover:text-[#1C1917]" data-status="unpaid">⏳ 待繳款</button>
+              <button id="filterPaidPaid" type="button" class="paid-filter-btn px-2.5 py-1 rounded-lg font-medium transition cursor-pointer text-[#57534E] hover:text-[#1C1917]" data-status="paid">✓ 已繳款</button>
+            </div>
           </div>
           <input id="searchInput" type="search" placeholder="搜尋商店、項目或金額..." class="field-input rounded-xl px-3 py-1.5 text-xs w-full sm:w-56 placeholder:text-[#8A847C]" />
         </div>
@@ -624,6 +647,7 @@
                 <th class="py-2.5 px-3 font-semibold">日期</th>
                 <th class="py-2.5 px-3 font-semibold">消費地點</th>
                 <th class="py-2.5 px-3 font-semibold">消費項目</th>
+                <th class="py-2.5 px-3 font-semibold text-center">繳款狀態</th>
                 <th class="py-2.5 px-3 font-semibold text-right">金額</th>
                 <th class="py-2.5 px-3 font-semibold text-right">操作</th>
               </tr>
@@ -697,15 +721,17 @@
     }
 
     const INITIAL_RECORDS = [
-      { id: 'rec-1', date: getTodayStr(0), location: '星巴克', item: '特大杯那堤與可頌', amount: 245 },
-      { id: 'rec-2', date: getTodayStr(0), location: '全聯福利中心', item: '鮮奶與家庭日用品', amount: 680 },
-      { id: 'rec-3', date: getTodayStr(-1), location: '台灣中油', item: '汽車加油 95 無鉛', amount: 1150 }
+      { id: 'rec-1', date: getTodayStr(0), location: '星巴克', item: '特大杯那堤與可頌', amount: 245, paid: false },
+      { id: 'rec-2', date: getTodayStr(0), location: '全聯福利中心', item: '鮮奶與家庭日用品', amount: 680, paid: false },
+      { id: 'rec-3', date: getTodayStr(-1), location: '台灣中油', item: '汽車加油 95 無鉛', amount: 1150, paid: true }
     ];
 
     let records = [];
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       records = saved ? JSON.parse(saved) : INITIAL_RECORDS;
+      // Ensure all loaded records have boolean paid field
+      records = records.map((r) => ({ ...r, paid: Boolean(r.paid) }));
     } catch (e) {
       records = [...INITIAL_RECORDS];
     }
@@ -722,6 +748,7 @@
     const locationInput = document.getElementById('locationInput');
     const itemInput = document.getElementById('itemInput');
     const amountInput = document.getElementById('amountInput');
+    const paidCheckbox = document.getElementById('paidCheckbox');
     const editingIdInput = document.getElementById('editingId');
     const expenseForm = document.getElementById('expenseForm');
     const submitBtn = document.getElementById('submitBtn');
@@ -738,8 +765,12 @@
     const closeCsvBtn = document.getElementById('closeCsvBtn');
 
     const todayTotalEl = document.getElementById('todayTotal');
+    const todayPaidSubText = document.getElementById('todayPaidSubText');
     const grandTotalEl = document.getElementById('grandTotal');
-    const totalCountEl = document.getElementById('totalCount');
+    const unpaidCountEl = document.getElementById('unpaidCount');
+    const paidCountEl = document.getElementById('paidCount');
+    const paidTotalAmountEl = document.getElementById('paidTotalAmount');
+    const totalCountEl = document.getElementById('totalCount') || unpaidCountEl;
     const recordsTableBody = document.getElementById('recordsTableBody');
     const emptyState = document.getElementById('emptyState');
 
@@ -747,6 +778,8 @@
     const clearFilterBtn = document.getElementById('clearFilterBtn');
     const searchInput = document.getElementById('searchInput');
     const exportCsvBtn = document.getElementById('exportCsvBtn');
+
+    let currentPaidFilter = 'all';
 
     const mainMicBtn = document.getElementById('mainMicBtn');
     const mainMicLabel = document.getElementById('mainMicLabel');
@@ -1183,6 +1216,8 @@
       const location = locationInput.value.trim();
       const item = itemInput.value.trim();
       const amount = parseInt(amountInput.value, 10);
+      const paid = Boolean(paidCheckbox && paidCheckbox.checked);
+
       if (!location || !item || isNaN(amount) || amount <= 0) {
         showBanner('請填寫完整的「消費地點、消費項目、金額」後再存入。');
         return;
@@ -1190,11 +1225,11 @@
 
       const editingId = editingIdInput.value;
       if (editingId) {
-        records = records.map((r) => r.id === editingId ? { ...r, date, location, item, amount } : r);
+        records = records.map((r) => r.id === editingId ? { ...r, date, location, item, amount, paid } : r);
         resetEditMode();
         showToast('已更新刷卡紀錄！');
       } else {
-        records.unshift({ id: 'rec-' + Date.now(), date, location, item, amount });
+        records.unshift({ id: 'rec-' + Date.now(), date, location, item, amount, paid });
         showToast('已新增刷卡紀錄！');
       }
       saveToStorage();
@@ -1204,6 +1239,7 @@
         locationInput.value = '';
         itemInput.value = '';
         amountInput.value = '';
+        if (paidCheckbox) paidCheckbox.checked = false;
       }
     }
 
@@ -1221,6 +1257,7 @@
       locationInput.value = target.location;
       itemInput.value = target.item;
       amountInput.value = target.amount;
+      if (paidCheckbox) paidCheckbox.checked = Boolean(target.paid);
       flashElement(dateInput);
       flashElement(locationInput);
       flashElement(itemInput);
@@ -1232,6 +1269,7 @@
 
     function resetEditMode() {
       editingIdInput.value = '';
+      if (paidCheckbox) paidCheckbox.checked = false;
       submitBtn.textContent = '＋ 新增刷卡紀錄';
       cancelEditBtn.classList.add('hidden');
     }
@@ -1241,6 +1279,7 @@
       locationInput.value = '';
       itemInput.value = '';
       amountInput.value = '';
+      if (paidCheckbox) paidCheckbox.checked = false;
       showToast('已取消編輯');
     });
 
@@ -1346,14 +1385,49 @@
       return div.innerHTML;
     }
 
+    function toggleRecordPaid(id) {
+      const target = records.find((r) => r.id === id);
+      if (!target) return;
+      target.paid = !target.paid;
+      saveToStorage();
+      renderRecords();
+      if (target.paid) {
+        showToast(`已標記為已繳款：${target.location} (${formatCurrency(target.amount)})，已從待繳統計扣除！`);
+      } else {
+        showToast(`已恢復為待繳款：${target.location} (${formatCurrency(target.amount)})，已重新計入統計！`);
+      }
+    }
+
     function renderRecords() {
       const todayStr = getTodayStr(0);
-      const todaySum = records.filter((r) => r.date === todayStr).reduce((acc, r) => acc + Number(r.amount || 0), 0);
-      const totalSum = records.reduce((acc, r) => acc + Number(r.amount || 0), 0);
+      const todayUnpaidSum = records
+        .filter((r) => r.date === todayStr && !r.paid)
+        .reduce((acc, r) => acc + Number(r.amount || 0), 0);
+      const todayPaidSum = records
+        .filter((r) => r.date === todayStr && r.paid)
+        .reduce((acc, r) => acc + Number(r.amount || 0), 0);
 
-      todayTotalEl.textContent = formatCurrency(todaySum);
-      grandTotalEl.textContent = formatCurrency(totalSum);
-      totalCountEl.textContent = records.length;
+      const totalUnpaidSum = records
+        .filter((r) => !r.paid)
+        .reduce((acc, r) => acc + Number(r.amount || 0), 0);
+      const totalPaidSum = records
+        .filter((r) => r.paid)
+        .reduce((acc, r) => acc + Number(r.amount || 0), 0);
+
+      const unpaidCount = records.filter((r) => !r.paid).length;
+      const paidCount = records.filter((r) => r.paid).length;
+
+      todayTotalEl.textContent = formatCurrency(todayUnpaidSum);
+      if (todayPaidSubText) {
+        todayPaidSubText.textContent = todayPaidSum > 0 ? `已繳 NT$ ${todayPaidSum.toLocaleString('zh-TW')}` : '尚無已繳紀錄';
+      }
+
+      grandTotalEl.textContent = formatCurrency(totalUnpaidSum);
+      if (unpaidCountEl) unpaidCountEl.textContent = unpaidCount;
+      if (paidCountEl) paidCountEl.textContent = paidCount;
+      if (paidTotalAmountEl) paidTotalAmountEl.textContent = totalPaidSum.toLocaleString('zh-TW');
+
+      if (totalCountEl) totalCountEl.textContent = unpaidCount;
       tabCountBadge.textContent = records.length;
 
       recentPreviewList.innerHTML = '';
@@ -1362,24 +1436,32 @@
         const gmailTag = rec.source === 'gmail'
           ? '<span class="px-1.5 py-0.5 rounded-md bg-[#ECFDF5] text-[#0F766E] border border-[#A7F3D0] text-[10px] font-semibold shrink-0">📧 Gmail 補登</span>'
           : '';
+        const paidBtn = rec.paid
+          ? `<button type="button" data-toggle-paid="${rec.id}" title="已繳款（點擊可恢復為待繳款）" class="px-2 py-0.5 rounded-full bg-[#ECFDF5] text-[#0F766E] border border-[#A7F3D0] hover:bg-emerald-100 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition shrink-0"><span>✓ 已繳款</span></button>`
+          : `<button type="button" data-toggle-paid="${rec.id}" title="待繳款（點擊可標記為已繳款）" class="px-2 py-0.5 rounded-full bg-white text-[#78716C] border border-[#E6E1D8] hover:border-[#0F766E] hover:text-[#0F766E] text-[10px] font-medium flex items-center gap-1 cursor-pointer transition shrink-0"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span><span>待繳款</span></button>`;
+
+        const amountClass = rec.paid ? 'text-[#8A847C] line-through font-semibold' : 'text-[#1C1917] font-bold';
+        const rowClass = rec.paid ? 'opacity-85 bg-[#FAF8F4]/60' : 'bg-[#FAF8F4]';
+
         const row = document.createElement('div');
-        row.className = 'flex items-center justify-between gap-3 py-2.5 px-3.5 rounded-2xl bg-[#FAF8F4] border border-[#E6E1D8] hover:border-[#D5CFC4] transition';
+        row.className = `flex items-center justify-between gap-3 py-2.5 px-3.5 rounded-2xl border border-[#E6E1D8] hover:border-[#D5CFC4] transition ${rowClass}`;
         row.innerHTML = `
           <div class="flex items-center gap-3 min-w-0">
-            <div class="w-8 h-8 rounded-xl bg-[#ECFDF5] text-[#0F766E] border border-[#A7F3D0]/80 flex items-center justify-center text-xs font-bold shrink-0">
+            <div class="w-8 h-8 rounded-xl ${rec.paid ? 'bg-stone-200 text-stone-600' : 'bg-[#ECFDF5] text-[#0F766E] border border-[#A7F3D0]/80'} flex items-center justify-center text-xs font-bold shrink-0">
               ${escapeHtml(initial)}
             </div>
             <div class="min-w-0">
               <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="text-xs sm:text-sm font-bold text-[#1C1917] truncate">${escapeHtml(rec.location)}</span>
                 ${gmailTag}
+                ${paidBtn}
                 <span class="font-num text-[11px] text-[#8A847C] shrink-0">${rec.date.slice(5)}</span>
               </div>
               <p class="text-xs text-[#57534E] truncate">${escapeHtml(rec.item)}</p>
             </div>
           </div>
           <div class="flex items-center gap-2.5 shrink-0">
-            <span class="font-num text-xs sm:text-sm font-bold text-[#1C1917]">${formatCurrency(rec.amount)}</span>
+            <span class="font-num text-xs sm:text-sm ${amountClass}">${formatCurrency(rec.amount)}</span>
             <button type="button" data-edit="${rec.id}" class="text-xs font-medium text-[#0F766E] hover:underline cursor-pointer">編輯</button>
             <button type="button" data-del="${rec.id}" class="text-xs font-medium text-[#E11D48] hover:underline cursor-pointer">刪除</button>
           </div>
@@ -1387,6 +1469,12 @@
         recentPreviewList.appendChild(row);
       });
 
+      recentPreviewList.querySelectorAll('[data-toggle-paid]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleRecordPaid(btn.getAttribute('data-toggle-paid'));
+        });
+      });
       recentPreviewList.querySelectorAll('[data-edit]').forEach((btn) => {
         btn.addEventListener('click', () => startEditRecord(btn.getAttribute('data-edit')));
       });
@@ -1400,6 +1488,11 @@
 
       const filtered = records
         .filter((r) => (!filterDate || r.date === filterDate))
+        .filter((r) => {
+          if (currentPaidFilter === 'unpaid') return !r.paid;
+          if (currentPaidFilter === 'paid') return Boolean(r.paid);
+          return true;
+        })
         .filter((r) => !query || r.location.toLowerCase().includes(query) || r.item.toLowerCase().includes(query) || String(r.amount).includes(query))
         .sort((a, b) => b.date.localeCompare(a.date));
 
@@ -1414,13 +1507,21 @@
         const gmailTag = rec.source === 'gmail'
           ? '<span class="ml-1.5 px-1.5 py-0.5 rounded-md bg-[#ECFDF5] text-[#0F766E] border border-[#A7F3D0] text-[10px] font-semibold">📧 Gmail 補登</span>'
           : '';
+        const paidBtn = rec.paid
+          ? `<button type="button" data-toggle-paid="${rec.id}" title="點擊切換為待繳款" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-[#ECFDF5] text-[#0F766E] border border-[#A7F3D0] hover:bg-emerald-100 cursor-pointer transition">✓ 已繳款</button>`
+          : `<button type="button" data-toggle-paid="${rec.id}" title="點擊標記為已繳款" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-[#FAF8F4] text-[#78716C] border border-[#E6E1D8] hover:border-[#0F766E] hover:text-[#0F766E] cursor-pointer transition"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>待繳款</button>`;
+
+        const amountClass = rec.paid ? 'text-[#8A847C] line-through font-semibold' : 'text-[#1C1917] font-bold';
+        const trClass = rec.paid ? 'bg-stone-50/60 hover:bg-[#FAF8F4]' : 'hover:bg-[#FAF8F4]';
+
         const tr = document.createElement('tr');
-        tr.className = 'hover:bg-[#FAF8F4] transition';
+        tr.className = `${trClass} transition`;
         tr.innerHTML = `
           <td class="py-2.5 px-3 whitespace-nowrap font-num text-[#8A847C]">${rec.date}</td>
           <td class="py-2.5 px-3 font-semibold text-[#1C1917]">${escapeHtml(rec.location)}${gmailTag}</td>
           <td class="py-2.5 px-3 text-[#57534E]">${escapeHtml(rec.item)}</td>
-          <td class="py-2.5 px-3 text-right font-num font-bold text-[#1C1917]">${formatCurrency(rec.amount)}</td>
+          <td class="py-2.5 px-3 text-center whitespace-nowrap">${paidBtn}</td>
+          <td class="py-2.5 px-3 text-right font-num ${amountClass}">${formatCurrency(rec.amount)}</td>
           <td class="py-2.5 px-3 text-right whitespace-nowrap">
             <button type="button" data-edit="${rec.id}" class="text-[#0F766E] font-medium hover:underline mr-2.5 cursor-pointer">編輯</button>
             <button type="button" data-del="${rec.id}" class="text-[#E11D48] font-medium hover:underline cursor-pointer">刪除</button>
@@ -1429,6 +1530,12 @@
         recordsTableBody.appendChild(tr);
       });
 
+      recordsTableBody.querySelectorAll('[data-toggle-paid]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleRecordPaid(btn.getAttribute('data-toggle-paid'));
+        });
+      });
       recordsTableBody.querySelectorAll('[data-edit]').forEach((btn) => {
         btn.addEventListener('click', () => startEditRecord(btn.getAttribute('data-edit')));
       });
@@ -1437,13 +1544,33 @@
       });
     }
 
+    document.querySelectorAll('.paid-filter-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        currentPaidFilter = btn.getAttribute('data-status');
+        document.querySelectorAll('.paid-filter-btn').forEach((b) => {
+          if (b === btn) {
+            b.className = 'paid-filter-btn px-2.5 py-1 rounded-lg font-semibold transition cursor-pointer bg-white text-[#0F766E] shadow-2xs';
+          } else {
+            b.className = 'paid-filter-btn px-2.5 py-1 rounded-lg font-medium transition cursor-pointer text-[#57534E] hover:text-[#1C1917]';
+          }
+        });
+        renderRecords();
+      });
+    });
+
     filterDateInput.addEventListener('change', renderRecords);
     clearFilterBtn.addEventListener('click', () => { filterDateInput.value = ''; renderRecords(); });
     searchInput.addEventListener('input', renderRecords);
 
     function buildCsvString() {
-      const headers = ['日期', '消費地點', '消費項目', '金額'];
-      const rows = records.map((r) => [r.date, `"${r.location.replace(/"/g, '""')}"`, `"${r.item.replace(/"/g, '""')}"`, r.amount]);
+      const headers = ['日期', '消費地點', '消費項目', '金額', '繳款狀態'];
+      const rows = records.map((r) => [
+        r.date,
+        `"${r.location.replace(/"/g, '""')}"`,
+        `"${r.item.replace(/"/g, '""')}"`,
+        r.amount,
+        r.paid ? '已繳款' : '待繳款'
+      ]);
       return [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
     }
 
@@ -1826,7 +1953,8 @@ function saveOrUpdateFile(folder, filename, content, mimeType) {
             date: alertObj.date || getTodayStr(0),
             location: alertObj.location || '信用卡刷卡',
             item: alertObj.item || 'Gmail 刷卡通知自動補登',
-            amount: Number(alertObj.amount)
+            amount: Number(alertObj.amount),
+            paid: false
           };
           records.unshift(newRec);
           reportRowsHtml.push(`
@@ -2123,7 +2251,7 @@ function saveOrUpdateFile(folder, filename, content, mimeType) {
         const res = await fetch(webhookUrl);
         const cloudRecords = await res.json();
         if (Array.isArray(cloudRecords) && cloudRecords.length > 0) {
-          records = cloudRecords;
+          records = cloudRecords.map((r) => ({ ...r, paid: Boolean(r.paid) }));
           saveToStorage();
           renderRecords();
           showToast(`✓ 已從 Google 雲端還原 ${cloudRecords.length} 筆紀錄！`);
@@ -2155,7 +2283,7 @@ function saveOrUpdateFile(folder, filename, content, mimeType) {
           if (file.name.endsWith('.json') || text.startsWith('[')) {
             const parsed = JSON.parse(text);
             if (Array.isArray(parsed) && parsed.length > 0) {
-              records = parsed;
+              records = parsed.map((r) => ({ ...r, paid: Boolean(r.paid) }));
               saveToStorage();
               renderRecords();
               showToast(`✓ 已成功匯入還原 ${parsed.length} 筆紀錄！`);
@@ -2175,8 +2303,9 @@ function saveOrUpdateFile(folder, filename, content, mimeType) {
             const location = clean(cols[1]);
             const item = clean(cols[2]);
             const amount = parseInt(clean(cols[3]), 10);
+            const paid = cols.length >= 5 ? clean(cols[4]) === '已繳款' : false;
             if (date && location && item && !isNaN(amount)) {
-              imported.push({ id: 'rec-' + Date.now() + '-' + i, date, location, item, amount });
+              imported.push({ id: 'rec-' + Date.now() + '-' + i, date, location, item, amount, paid });
             }
           }
 
