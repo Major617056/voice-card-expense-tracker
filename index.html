@@ -833,8 +833,21 @@
       return matched && total > 0 ? total : null;
     }
 
+    function cleanRepeatedWords(str) {
+      if (!str) return '';
+      let result = str.trim();
+      let prev;
+      // 去除長度 2 到 15 的相鄰重複詞/短語（例如「北港北港」->「北港」、「停車場停車場」->「停車場」）
+      // 連續出現 2 次以上一律簡化為 1 次，不影響「謝謝」、「天天」等單字疊字
+      do {
+        prev = result;
+        result = result.replace(/([\u4e00-\u9fa5A-Za-z0-9]{2,15}?)\1+/g, '$1');
+      } while (result !== prev);
+      return result.trim();
+    }
+
     function parseSpokenExpense(rawText) {
-      let text = rawText.trim().replace(/[。，、！？]/g, ' ');
+      let text = cleanRepeatedWords(rawText).replace(/[。，、！？]/g, ' ');
       const result = { date: getTodayStr(0), location: '', item: '', amount: null };
 
       if (text.includes('前天')) {
@@ -866,30 +879,43 @@
         if (cnAmount) result.amount = cnAmount;
       }
 
-      text = text.replace(/花了|消費了|刷卡|刷了|一共|總共|台幣|塊錢|元整|塊|元/g, ' ').trim();
+      text = text.replace(/花了|花費了|花費|消費了|消費|刷卡|刷了|一共|總共|支出|扣款|付了|付|台幣|塊錢|元整|塊|元/g, ' ').trim();
 
-      const patternA = /(?:在|去|到)\s*([^\s]+?)\s*(?:買了|買|吃了|吃|喝了|喝|點了|點|訂了|訂|刷了|加了|消費)\s*(.+)/;
+      const patternA = /(?:在|去|到)\s*([^\s]+?)\s*(?:買了|買|吃了|吃|喝了|喝|點了|點|訂了|訂|刷了|加了|停了|停車|消費|支出)\s*(.+)/;
       const matchA = text.match(patternA);
       if (matchA) {
-        result.location = matchA[1].trim();
-        result.item = matchA[2].trim();
+        result.location = cleanRepeatedWords(matchA[1]);
+        result.item = cleanRepeatedWords(matchA[2]);
         return result;
       }
 
-      const patternB = /^([^\s]+?)\s*(?:買了|買|吃了|吃|喝了|喝|點了|點|訂了|訂)\s*(.+)/;
+      const patternB = /^([^\s]+?)\s*(?:買了|買|吃了|吃|喝了|喝|點了|點|訂了|訂|停了|停車)\s*(.+)/;
       const matchB = text.match(patternB);
       if (matchB) {
-        result.location = matchB[1].trim();
-        result.item = matchB[2].trim();
+        result.location = cleanRepeatedWords(matchB[1]);
+        result.item = cleanRepeatedWords(matchB[2]);
         return result;
       }
 
       const tokens = text.split(/\s+/).filter(Boolean);
       if (tokens.length >= 2) {
-        result.location = tokens[0].replace(/^(在|去|到)/, '');
-        result.item = tokens.slice(1).join(' ');
+        result.location = cleanRepeatedWords(tokens[0].replace(/^(在|去|到)/, ''));
+        result.item = cleanRepeatedWords(tokens.slice(1).join(' '));
       } else if (tokens.length === 1) {
-        result.location = tokens[0].replace(/^(在|去|到)/, '');
+        let single = cleanRepeatedWords(tokens[0].replace(/^(在|去|到)/, ''));
+        const parkSplit = single.match(/^(.+?停車場)(.+)?$/);
+        if (parkSplit) {
+          result.location = parkSplit[1];
+          result.item = parkSplit[2] ? parkSplit[2].trim() : '停車費';
+        } else if (/停車場|車位|停車/.test(single)) {
+          result.location = single;
+          result.item = '停車費';
+        } else if (/加油站|中油|台塑/.test(single)) {
+          result.location = single;
+          result.item = '加油費';
+        } else {
+          result.location = single;
+        }
       }
       return result;
     }
@@ -943,7 +969,8 @@
     let isListening = false;
     let manualStopRequested = false;
     let activeTargetField = 'full';
-    let finalBuffer = '';
+    let previousSessionsText = '';
+    let currentSessionFinal = '';
     let latestCombinedSpeech = '';
     let silenceTimer = null;
 
@@ -975,7 +1002,7 @@
       try { if (recognition) recognition.stop(); } catch (e) {}
       updateMicUiListening(false);
 
-      const spoken = latestCombinedSpeech.trim();
+      const spoken = cleanRepeatedWords(latestCombinedSpeech).trim();
       if (!spoken) {
         transcriptText.textContent = '尚未偵測到語音內容，請再點一次上方「點擊說話」圓鈕重試。';
         return;
@@ -985,11 +1012,11 @@
       if (activeTargetField === 'full') {
         applyParsedExpense(spoken);
       } else if (activeTargetField === 'location') {
-        locationInput.value = spoken.replace(/[。，、]/g, '').trim();
+        locationInput.value = cleanRepeatedWords(spoken.replace(/[。，、]/g, '').trim());
         flashElement(locationInput);
         showToast(`已填入消費地點：${locationInput.value}`);
       } else if (activeTargetField === 'item') {
-        itemInput.value = spoken.replace(/[。，、]/g, '').trim();
+        itemInput.value = cleanRepeatedWords(spoken.replace(/[。，、]/g, '').trim());
         flashElement(itemInput);
         showToast(`已填入消費項目：${itemInput.value}`);
       } else if (activeTargetField === 'amount') {
@@ -1024,16 +1051,22 @@
         };
 
         recognition.onresult = (event) => {
-          let interim = '';
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            const txt = event.results[i][0].transcript;
-            if (event.results[i].isFinal) {
-              finalBuffer += txt;
+          // 每次事件重新遍歷當前 session 的 event.results，避免累加疊加產生重複字
+          let sessionFinal = '';
+          let sessionInterim = '';
+          for (let i = 0; i < event.results.length; i++) {
+            const res = event.results[i];
+            const txt = res[0].transcript;
+            if (res.isFinal) {
+              sessionFinal += txt;
             } else {
-              interim += txt;
+              sessionInterim += txt;
             }
           }
-          latestCombinedSpeech = (finalBuffer + interim).trim();
+          currentSessionFinal = sessionFinal;
+          const rawCombined = (previousSessionsText + sessionFinal + sessionInterim).trim();
+          latestCombinedSpeech = cleanRepeatedWords(rawCombined);
+
           if (latestCombinedSpeech) {
             transcriptText.textContent = `🎙️ 正在聽您說：「${latestCombinedSpeech}」...`;
             parseHintText.textContent = '繼續說話，或停頓 3 秒自動完成（也可直接點紅色大圓鈕完成）';
@@ -1064,6 +1097,9 @@
 
         recognition.onend = () => {
           if (isListening && !manualStopRequested) {
+            // 自動重啟時將本段已確認的 final 固化，清空當前 session
+            previousSessionsText = cleanRepeatedWords(previousSessionsText + currentSessionFinal);
+            currentSessionFinal = '';
             try {
               recognition.start();
               return;
@@ -1087,7 +1123,8 @@
         return;
       }
       activeTargetField = targetField;
-      finalBuffer = '';
+      previousSessionsText = '';
+      currentSessionFinal = '';
       latestCombinedSpeech = '';
       manualStopRequested = false;
       clearSilenceTimer();
