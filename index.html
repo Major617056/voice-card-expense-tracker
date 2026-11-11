@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.tailwindcss.com https://script.google.com https://script.googleusercontent.com;" />
   <meta name="theme-color" content="#F6F4F0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -361,24 +362,38 @@
           </div>
         </div>
 
-        <!-- Google Apps Script Webhook URL Setup -->
+        <!-- Google Apps Script Webhook URL & Secret Token Setup -->
         <div class="rounded-xl bg-white border border-[#E6E1D8] p-3 space-y-2">
           <div class="flex items-center justify-between gap-2 flex-wrap">
-            <span class="text-xs font-semibold text-[#1C1917]">🔗 Google Apps Script 連結（同時驅動「Gmail 刷卡通知掃描」與「Google 雲端硬碟每日備份」）</span>
+            <span class="text-xs font-semibold text-[#1C1917]">🔗 Google Apps Script 連線與 🔒 安全金鑰防護</span>
             <button id="toggleGasGuideBtn" type="button" class="text-xs text-[#0F766E] font-semibold hover:underline cursor-pointer">
               📋 複製專屬雲端＋Gmail 腳本與教學
             </button>
           </div>
-          <div class="flex items-center gap-2">
-            <input
-              id="gasWebhookInput"
-              type="url"
-              placeholder="貼上您的 Google Apps Script 網頁應用程式網址 (https://script.google.com/macros/s/.../exec)"
-              class="field-input flex-1 rounded-xl px-3 py-1.5 text-xs placeholder:text-[#8A847C]"
-            />
-            <button id="saveGasUrlBtn" type="button" class="px-3 py-1.5 rounded-xl bg-[#EFECE6] hover:bg-[#E5E0D5] text-[#1C1917] text-xs font-semibold cursor-pointer shrink-0">
-              儲存網址
-            </button>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div class="sm:col-span-2">
+              <label for="gasWebhookInput" class="block text-[11px] font-medium text-[#78716C] mb-1">網頁應用程式網址 (Web App URL)</label>
+              <input
+                id="gasWebhookInput"
+                type="url"
+                placeholder="https://script.google.com/macros/s/.../exec"
+                class="field-input w-full rounded-xl px-3 py-1.5 text-xs placeholder:text-[#8A847C]"
+              />
+            </div>
+            <div>
+              <label for="gasTokenInput" class="block text-[11px] font-medium text-[#78716C] mb-1">🔒 專屬安全金鑰 (Token 防外洩)</label>
+              <div class="flex items-center gap-1.5">
+                <input
+                  id="gasTokenInput"
+                  type="text"
+                  placeholder="自訂安全金鑰 (可選)"
+                  class="field-input w-full rounded-xl px-3 py-1.5 text-xs placeholder:text-[#8A847C]"
+                />
+                <button id="saveGasUrlBtn" type="button" class="px-3 py-1.5 rounded-xl bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-semibold cursor-pointer shrink-0">
+                  儲存
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- Expandable 1-minute GAS Setup Guide -->
@@ -395,6 +410,17 @@
               </button>
             </div>
             <textarea id="gasCodeTextarea" readonly rows="6" class="w-full rounded-lg border border-[#E6E1D8] bg-[#FAF8F4] p-2 text-[11px] font-mono text-[#1C1917] focus:outline-none"></textarea>
+          </div>
+
+          <!-- Privacy & Local Data Wipe Protection -->
+          <div class="flex items-center justify-between pt-2.5 border-t border-[#E6E1D8] text-xs">
+            <span class="text-[#8A847C] flex items-center gap-1.5">
+              <span>🛡️ 隱私防護：</span>
+              <span class="hidden sm:inline">在公用裝置或換機時，可一鍵安全抹除本機快取與設定</span>
+            </span>
+            <button id="wipeLocalDataBtn" type="button" class="text-xs text-[#E11D48] hover:underline font-semibold cursor-pointer shrink-0">
+              🗑️ 清除本機所有暫存資料
+            </button>
           </div>
         </div>
       </div>
@@ -769,7 +795,40 @@
           </button>
         </div>
       </div>
+    <!-- Wipe Local Data Confirmation Modal -->
+    <div id="wipeDataModal" class="hidden fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-[2px] flex items-center justify-center p-4">
+      <div class="w-full max-w-sm rounded-3xl bg-white border border-[#E6E1D8] p-5 shadow-2xl space-y-4">
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-[#FFF1F2] text-[#E11D48] border border-rose-200 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <div class="space-y-1">
+            <h2 class="text-base font-bold text-[#1C1917]">確認清除本機所有暫存資料？</h2>
+            <p class="text-xs text-[#57534E]">
+              此操作將從瀏覽器 LocalStorage 中抹除所有記帳紀錄與雲端連線設定。若您已同步至 Google 雲端，雲端上的檔案不受影響。
+            </p>
+          </div>
+        </div>
+
+        <div class="rounded-2xl bg-[#FAF8F4] border border-[#E6E1D8] p-3 text-xs text-[#8A847C] space-y-1">
+          <div>• 刷卡紀錄將重設為預設範例</div>
+          <div>• 本機 Google Apps Script 網址與金鑰將被清空</div>
+          <div>• 建議在公用電腦使用完畢後執行此操作</div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-1">
+          <button id="cancelWipeBtn" type="button" class="flex-1 py-2.5 px-4 rounded-2xl border border-[#D5CFC4] bg-white hover:bg-[#FAF8F4] text-xs sm:text-sm font-semibold text-[#57534E] transition cursor-pointer">
+            取消
+          </button>
+          <button id="confirmWipeBtn" type="button" class="flex-1 py-2.5 px-4 rounded-2xl bg-[#E11D48] hover:bg-[#BE123C] text-white text-xs sm:text-sm font-semibold shadow-sm transition active:scale-95 cursor-pointer">
+            確認抹除
+          </button>
+        </div>
+      </div>
     </div>
+  </div>
   </main>
 
   <script>
@@ -790,14 +849,36 @@
       { id: 'rec-3', date: getTodayStr(-1), location: '台灣中油', item: '汽車加油 95 無鉛', amount: 1150, paid: true }
     ];
 
+    function sanitizeRecordItem(r, idx = 0) {
+      if (!r || typeof r !== 'object') return null;
+      const date = /^\d{4}-\d{2}-\d{2}$/.test(String(r.date)) ? String(r.date) : getTodayStr(0);
+      let loc = String(r.location || '消費地點').trim();
+      let itm = String(r.item || '消費明細').trim();
+      // Neutralize any leading formula symbols if pasted or imported
+      if (/^[=+\-@\t\r]/.test(loc)) loc = loc.replace(/^[=+\-@\t\r]+/, '');
+      if (/^[=+\-@\t\r]/.test(itm)) itm = itm.replace(/^[=+\-@\t\r]+/, '');
+      loc = loc.slice(0, 100);
+      itm = itm.slice(0, 150);
+      const amount = Math.max(0, Math.min(100000000, Number(r.amount) || 0));
+      const paid = Boolean(r.paid);
+      const id = r.id ? String(r.id).slice(0, 50) : ('rec-' + Date.now() + '-' + idx);
+      const res = { id, date, location: loc, item: itm, amount, paid };
+      if (r.source) res.source = String(r.source).slice(0, 20);
+      if (r.gmailId) res.gmailId = String(r.gmailId).slice(0, 60);
+      return res;
+    }
+
     let records = [];
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      records = saved ? JSON.parse(saved) : INITIAL_RECORDS;
-      // Ensure all loaded records have boolean paid field
-      records = records.map((r) => ({ ...r, paid: Boolean(r.paid) }));
+      const parsed = saved ? JSON.parse(saved) : INITIAL_RECORDS;
+      if (Array.isArray(parsed)) {
+        records = parsed.map((r, i) => sanitizeRecordItem(r, i)).filter(Boolean);
+      } else {
+        records = INITIAL_RECORDS.map((r, i) => sanitizeRecordItem(r, i));
+      }
     } catch (e) {
-      records = [...INITIAL_RECORDS];
+      records = INITIAL_RECORDS.map((r, i) => sanitizeRecordItem(r, i));
     }
 
     const tabBtnEntry = document.getElementById('tabBtnEntry');
@@ -1366,6 +1447,18 @@
         showBanner('請填寫完整的「消費地點、消費項目、金額」後再存入。');
         return;
       }
+      if (amount > 100000000) {
+        showBanner('單筆消費金額上限為 1 億元，請確認金額是否輸入正確。');
+        return;
+      }
+      if (location.length > 100) {
+        showBanner('消費地點長度請勿超過 100 個字。');
+        return;
+      }
+      if (item.length > 150) {
+        showBanner('消費項目長度請勿超過 150 個字。');
+        return;
+      }
 
       const editingId = editingIdInput.value;
       let targetRecord = null;
@@ -1534,9 +1627,13 @@
     }
 
     function escapeHtml(str) {
-      const div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
     }
 
     function toggleRecordPaid(id) {
@@ -1730,14 +1827,23 @@
     clearFilterBtn.addEventListener('click', () => { filterDateInput.value = ''; renderRecords(); });
     searchInput.addEventListener('input', renderRecords);
 
+    function sanitizeCsvCell(val) {
+      let str = String(val === null || val === undefined ? '' : val);
+      // Neutralize formula injection in Excel/Sheets (leading =, +, -, @, \t, \r)
+      if (/^[=+\-@\t\r]/.test(str)) {
+        str = "'" + str;
+      }
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+
     function buildCsvString() {
       const headers = ['日期', '消費地點', '消費項目', '金額', '繳款狀態'];
       const rows = records.map((r) => [
-        r.date,
-        `"${r.location.replace(/"/g, '""')}"`,
-        `"${r.item.replace(/"/g, '""')}"`,
-        r.amount,
-        r.paid ? '已繳款' : '待繳款'
+        sanitizeCsvCell(r.date),
+        sanitizeCsvCell(r.location),
+        sanitizeCsvCell(r.item),
+        Number(r.amount || 0),
+        sanitizeCsvCell(r.paid ? '已繳款' : '待繳款')
       ]);
       return [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
     }
@@ -1810,17 +1916,34 @@
     const importFileBtn = document.getElementById('importFileBtn');
     const importBackupFileInput = document.getElementById('importBackupFileInput');
     const gasWebhookInput = document.getElementById('gasWebhookInput');
+    const gasTokenInput = document.getElementById('gasTokenInput');
     const saveGasUrlBtn = document.getElementById('saveGasUrlBtn');
     const toggleGasGuideBtn = document.getElementById('toggleGasGuideBtn');
     const gasGuideSection = document.getElementById('gasGuideSection');
     const gasCodeTextarea = document.getElementById('gasCodeTextarea');
     const copyGasCodeBtn = document.getElementById('copyGasCodeBtn');
 
-    const GAS_SCRIPT_TEMPLATE = `// Google Apps Script：語音刷卡記帳 — Gmail 刷卡通知自動核對補登 ＆ Google 雲端每日備份
+    function generateGasScript(token = '') {
+      const safeToken = String(token || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      return `// Google Apps Script：語音刷卡記帳 — Gmail 刷卡通知自動核對補登 ＆ Google 雲端每日備份
 // 已預先綁定您的雲端資料夾：Anti / 語音刷卡記帳_自動備份
 const FOLDER_ID = '${DRIVE_FOLDER_ID}';
+// 專屬安全驗證金鑰（防止未授權存取您的 Gmail 與雲端檔案，未設定則相容舊版）
+const SECRET_TOKEN = '${safeToken}';
+
+function checkAuth(e) {
+  if (!SECRET_TOKEN) return true; // 若未設定金鑰則保持相容舊版
+  const reqToken = (e && e.parameter && e.parameter.token) || (function() {
+    try { return JSON.parse(e.postData.contents).token; } catch(err) { return ''; }
+  })();
+  return reqToken === SECRET_TOKEN;
+}
 
 function doPost(e) {
+  if (!checkAuth(e)) {
+    return ContentService.createTextOutput(JSON.stringify({ ok: false, error: 'Unauthorized: Invalid token' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
   const folder = DriveApp.getFolderById(FOLDER_ID);
   const payload = JSON.parse(e.postData.contents);
   const dateStr = payload.date || Utilities.formatDate(new Date(), 'Asia/Taipei', 'yyyy-MM-dd');
@@ -1838,6 +1961,10 @@ function doPost(e) {
 }
 
 function doGet(e) {
+  if (!checkAuth(e)) {
+    return ContentService.createTextOutput(JSON.stringify({ ok: false, error: 'Unauthorized: Invalid token' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
   const action = (e && e.parameter && e.parameter.action) ? e.parameter.action : 'backup';
   if (action === 'scanGmail') {
     const alerts = scanGmailCardAlerts(7);
@@ -1915,7 +2042,8 @@ function dailyGmailAndBackupJob() {
         date: a.date,
         location: a.location,
         item: a.item,
-        amount: a.amount
+        amount: a.amount,
+        paid: false
       });
       added++;
     }
@@ -1938,13 +2066,13 @@ function saveOrUpdateFile(folder, filename, content, mimeType) {
     folder.createFile(filename, content, mimeType);
   }
 }`;
-
-    gasCodeTextarea.value = GAS_SCRIPT_TEMPLATE;
+    }
 
     let cloudConfig = {
       enabled: true,
       gmailAutoCheck: true,
       webhookUrl: '',
+      token: '',
       lastBackupDate: '',
       lastBackupTime: '',
       lastGmailCheckDate: '',
@@ -1958,9 +2086,18 @@ function saveOrUpdateFile(folder, filename, content, mimeType) {
       }
     } catch (e) {}
 
+    function updateGasCodeSnippet() {
+      if (gasCodeTextarea) {
+        gasCodeTextarea.value = generateGasScript(cloudConfig.token || '');
+      }
+    }
+
+    updateGasCodeSnippet();
+
     dailyAutoBackupToggle.checked = cloudConfig.enabled !== false;
     dailyGmailCheckToggle.checked = cloudConfig.gmailAutoCheck !== false;
     gasWebhookInput.value = cloudConfig.webhookUrl || '';
+    if (gasTokenInput) gasTokenInput.value = cloudConfig.token || '';
 
     function saveCloudConfig() {
       try {
@@ -2038,13 +2175,17 @@ function saveOrUpdateFile(folder, filename, content, mimeType) {
 
     saveGasUrlBtn.addEventListener('click', () => {
       cloudConfig.webhookUrl = gasWebhookInput.value.trim();
+      if (gasTokenInput) {
+        cloudConfig.token = gasTokenInput.value.trim();
+      }
       saveCloudConfig();
+      updateGasCodeSnippet();
       if (cloudConfig.webhookUrl) {
-        showToast('已儲存連結，正在自動檢查 Gmail 刷卡通知並備份...');
+        showToast('已儲存網址與安全金鑰，正在自動檢查 Gmail 刷卡通知並備份...');
         scanGmailAndReconcile({ silent: false });
         performCloudBackup({ silent: false, forceManual: false });
       } else {
-        showToast('已清除雲端同步網址');
+        showToast('已清除雲端同步設定');
       }
     });
 
@@ -2220,8 +2361,13 @@ function saveOrUpdateFile(folder, filename, content, mimeType) {
           scanGmailNowBtn.disabled = true;
         }
         const sep = webhookUrl.includes('?') ? '&' : '?';
-        const res = await fetch(`${webhookUrl}${sep}action=scanGmail`);
+        const tokenParam = cloudConfig.token ? `&token=${encodeURIComponent(cloudConfig.token)}` : '';
+        const res = await fetch(`${webhookUrl}${sep}action=scanGmail${tokenParam}`);
         const data = await res.json();
+        if (data && data.error) {
+          if (!silent) showBanner('⚠️ 存取被拒絕：' + data.error + '，請確認安全金鑰是否一致。');
+          return;
+        }
         if (data && Array.isArray(data.alerts)) {
           reconcileGmailTransactions(data.alerts, 'Gmail 實時掃描');
         }
@@ -2311,6 +2457,7 @@ function saveOrUpdateFile(folder, filename, content, mimeType) {
             mode: 'no-cors',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({
+              token: cloudConfig.token || undefined,
               date: todayStr,
               timestamp: new Date().toISOString(),
               records,
@@ -2416,10 +2563,16 @@ function saveOrUpdateFile(folder, filename, content, mimeType) {
       try {
         restoreFromCloudBtn.textContent = '📥 正在從雲端讀取...';
         restoreFromCloudBtn.disabled = true;
-        const res = await fetch(webhookUrl);
+        const sep = webhookUrl.includes('?') ? '&' : '?';
+        const tokenParam = cloudConfig.token ? `&token=${encodeURIComponent(cloudConfig.token)}` : '';
+        const res = await fetch(`${webhookUrl}${sep}action=backup${tokenParam}`);
         const cloudRecords = await res.json();
+        if (cloudRecords && cloudRecords.error) {
+          showBanner('⚠️ 雲端存取失敗：' + cloudRecords.error + '，請確認安全金鑰是否一致。');
+          return;
+        }
         if (Array.isArray(cloudRecords) && cloudRecords.length > 0) {
-          records = cloudRecords.map((r) => ({ ...r, paid: Boolean(r.paid) }));
+          records = cloudRecords.map((r, i) => sanitizeRecordItem(r, i)).filter(Boolean);
           saveToStorage();
           renderRecords();
           showToast(`✓ 已從 Google 雲端還原 ${cloudRecords.length} 筆紀錄！`);
@@ -2451,7 +2604,7 @@ function saveOrUpdateFile(folder, filename, content, mimeType) {
           if (file.name.endsWith('.json') || text.startsWith('[')) {
             const parsed = JSON.parse(text);
             if (Array.isArray(parsed) && parsed.length > 0) {
-              records = parsed.map((r) => ({ ...r, paid: Boolean(r.paid) }));
+              records = parsed.map((r, i) => sanitizeRecordItem(r, i)).filter(Boolean);
               saveToStorage();
               renderRecords();
               showToast(`✓ 已成功匯入還原 ${parsed.length} 筆紀錄！`);
@@ -2473,7 +2626,8 @@ function saveOrUpdateFile(folder, filename, content, mimeType) {
             const amount = parseInt(clean(cols[3]), 10);
             const paid = cols.length >= 5 ? clean(cols[4]) === '已繳款' : false;
             if (date && location && item && !isNaN(amount)) {
-              imported.push({ id: 'rec-' + Date.now() + '-' + i, date, location, item, amount, paid });
+              const sanitized = sanitizeRecordItem({ date, location, item, amount, paid }, i);
+              if (sanitized) imported.push(sanitized);
             }
           }
 
@@ -2491,6 +2645,41 @@ function saveOrUpdateFile(folder, filename, content, mimeType) {
       };
       reader.readAsText(file, 'UTF-8');
     });
+
+    // Privacy: Wipe Local Data Logic
+    const wipeLocalDataBtn = document.getElementById('wipeLocalDataBtn');
+    const wipeDataModal = document.getElementById('wipeDataModal');
+    const cancelWipeBtn = document.getElementById('cancelWipeBtn');
+    const confirmWipeBtn = document.getElementById('confirmWipeBtn');
+
+    if (wipeLocalDataBtn && wipeDataModal) {
+      wipeLocalDataBtn.addEventListener('click', () => {
+        wipeDataModal.classList.remove('hidden');
+      });
+      if (cancelWipeBtn) {
+        cancelWipeBtn.addEventListener('click', () => {
+          wipeDataModal.classList.add('hidden');
+        });
+      }
+      if (confirmWipeBtn) {
+        confirmWipeBtn.addEventListener('click', () => {
+          try {
+            localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem(CLOUD_CFG_KEY);
+            records = INITIAL_RECORDS.map((r, i) => sanitizeRecordItem(r, i));
+            gasWebhookInput.value = '';
+            gasTokenInput.value = '';
+            cloudConfig = { webhookUrl: '', token: '', autoBackup: true, autoGmailCheck: true, lastBackupTime: null, lastBackupHash: '' };
+            renderRecords();
+            wipeDataModal.classList.add('hidden');
+            showToast('✓ 本機紀錄與金鑰已全部安全抹除！');
+          } catch (e) {
+            wipeDataModal.classList.add('hidden');
+            showBanner('清除本機資料時發生錯誤。');
+          }
+        });
+      }
+    }
 
     renderRecords();
     checkDailyAutoTasksOnLoad();
